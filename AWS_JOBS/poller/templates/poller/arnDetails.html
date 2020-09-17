@@ -1,0 +1,21 @@
+{% extends 'poller/baseDesign.html' %}
+
+{% block content %}
+    <!--Div for Background-->
+    <div class="bg text-center">
+        <!--Div for Centered Text & Input-->
+        <div class="centered">
+            <Form id="poller" action="{% url 'home-poller' %}" method="POST">
+                {% csrf_token %}
+                <p class="secondLine">AWS &nbsp;ARN &nbsp;DETAILS</p>
+                <p> <input class="InputStyle" placeholder="Region...  &nbsp; "  name="REGION" style="font-family:Arial, FontAwesome" type="text"> </p>
+                <p> <input class="InputStyle" placeholder="Service...  &nbsp; " name="SERVICE" style="font-family:Arial, FontAwesome" type="text"> </p>
+                <p> <input class="InputStyle" placeholder="AWS API...  &nbsp; " name="API" style="font-family:Arial, FontAwesome" type="text"> </p>
+                <p> <input class="InputStyle" placeholder="Role ARN !  &nbsp; " name="ROLEARN" style="font-family:Arial, FontAwesome" type="text"> </p>
+                <p><button type="submit" class="btn btn-warning col-md-10 mt-2">Push Details</button></p> 
+                </div>
+            </Form>
+        </div>
+       
+    </div>
+{% endblock content %}
