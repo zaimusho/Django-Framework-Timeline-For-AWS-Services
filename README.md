@@ -38,7 +38,7 @@ region = YOUR_PREFERRED_REGION <br>
 3. python manage.py migrate (for default django databases and models route) <br>
 4. python manage.py makemigrations (to update the django web framework with post written Models) <br>
 5. python manage.py sqlmigrate <model_name> <migration_index for eg: 0001 from 0001_initial.py> <br>
-6. python manage.py runserver -p 8000<br>
+6. python manage.py runserver 8000 <can to be changed to desired port> <br>
 
 **OPEN THE BROWSER AND TYPE IN THE BELOW URL:** <br>
 
