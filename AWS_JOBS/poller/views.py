@@ -1,6 +1,18 @@
+
+import logging
+import pprint, json
 from django.shortcuts import render, redirect
 from django.http import HttpResponse
 from .models import arnDetails as userModel
+
+
+# logging proc structure for the valid executable script and throwable exception
+
+logger = logging.getLogger('root')
+loggingFormat = "[%(filename)s: %(lineno)s- %(funcName)20s() ]  %(message)s"
+logging.basicConfig(format=loggingFormat)
+logger.setLevel(logging.DEBUG)
+
 
 def home(request):
     
@@ -22,13 +34,13 @@ def home(request):
             info = userModel(region=region,service=service,apis=api,arn=roleARN)
             info.save()
             model = userModel.objects.all()
-            print(model)
+            print(model.first)
         
         else:
             exit()
     
     else:
-        print("Reuqest not accessed !!! ")
+        print("Request not accessed !!! ")
     
     return render(request, "poller/viewer.html", context=context)
 

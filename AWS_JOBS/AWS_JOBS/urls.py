@@ -13,10 +13,22 @@ Including another URLconf
     1. Import the include() function: from django.urls import include, path
     2. Add a URL to urlpatterns:  path('blog/', include('blog.urls'))
 """
+
+import logging
+import pprint, json
 from django.contrib import admin
 from django.urls import path, include
+
+# logging proc structure for the valid executable script and throwable exception
+
+logger = logging.getLogger('root')
+loggingFormat = "[%(filename)s: %(lineno)s- %(funcName)20s() ]  %(message)s"
+logging.basicConfig(format=loggingFormat)
+logger.setLevel(logging.DEBUG)
 
 urlpatterns = [
     path('admin/', admin.site.urls),
     path('poller/', include('poller.urls')),
 ]
+
+logger.debug(urlpatterns)

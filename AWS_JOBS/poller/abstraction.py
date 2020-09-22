@@ -91,25 +91,24 @@ class awsClass:
       return str(endPointErr)
       exit()
 
-  def roleDataExtraction(self, apiCall, roleARN): #, filePath):
+  def roleDataExtraction(self, assumeRoleCredentials): #, filePath):
     
     # extracting credentials from the Roles created in particular session
+    tmpCredentials = list()
     
     try:
       # objFile = open(filePath, "r")
       # policyJSON = json.load(objFile)
-      
-      assumeRoleSTSCredentials = self.awsSTSRole(apiCall=apiCall, roleARN=roleARN) #, policyJSON=policyJSON)
-      
+       
       # unpacking the id, secret and security token
     
-      securityID = assumeRoleSTSCredentials['Credentials']['AccessKeyId']
-      securitySecret = assumeRoleSTSCredentials['Credentials']['SecretAccessKey'] 
-      securityToken = assumeRoleSTSCredentials['Credentials']['SessionToken']
+      tmpCredentials.append(assumeRoleCredentials['Credentials']['AccessKeyId'])
+      tmpCredentials.append(assumeRoleCredentials['Credentials']['SecretAccessKey']) 
+      tmpCredentials.append(assumeRoleCredentials['Credentials']['SessionToken'])
       
       # objFile.close()
       
-      return (securityID, securitySecret, securityToken)
+      return tmpCredentials
       # return assumeRoleSTSCredentials
       
     except NoCredentialsError as credsErr:
@@ -119,21 +118,27 @@ class awsClass:
       
   # Use the assumed clients temporary security credentials to spin new Boto3 client instance
   
-  def spinNewClient(self, apiCall, *tmpCredentials):
+  def spinNewClient(self, externService, tmpCredentials):
     
     # Executing the client using STS credentails
-    
+    response= dict()
     securityID = tmpCredentials[0]
     securitySecret = tmpCredentials[1]
     securityToken = tmpCredentials[2]
     session = boto3.Session(profile_name="development", region_name=self.REGION)
-    assumedClient = boto3.client(service_name=apiCall, aws_access_key_id = securityID, 
-                                aws_secret_acces_key = securitySecret,
+    assumedClient = session.client(service_name=externService, aws_access_key_id = securityID, 
+                                aws_secret_access_key = securitySecret,
                                 aws_session_token = securityToken)
     
+    # assumedClient = session.client(service_name=externService)
+    
+    # Check on status for executing instance with resources parameters 
+    # clientResources = session.resource(service_name=externService)
+    # response = clientResources.instances.all()
+    # print(clientResources)
     logging.debug(assumedClient)
     
-    if apiCall == "ec2":
+    if externService == "ec2":
       response = assumedClient.describe_instance_status(IncludeAllInstances=True)
       logging.debug(response)
     
