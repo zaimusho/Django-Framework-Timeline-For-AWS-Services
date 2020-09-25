@@ -138,7 +138,7 @@ def instanceStatus(request):
         response = serviceDetail(request)
         assumeRoleCreds = ingestAPICall(response)
         instanceData = instanceController(response["region"], response["service"], credentials=assumeRoleCreds)
-        pprint.pprint(instanceData)
+        # pprint.pprint(instanceData)
         
     except Exception as err:
         logger.exception("Error while Executing the InstanceStatus method: "+ str(err) + "\n")
