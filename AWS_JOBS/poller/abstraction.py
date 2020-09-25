@@ -19,6 +19,7 @@ class abstractionLayer:
   def __init__(self, REGION):
     super().__init__()
     self.REGION = REGION
+   
     
   def scanRegion(self, service):
     try:
@@ -36,6 +37,7 @@ class abstractionLayer:
     
     else:
       return serviceRegions
+   
     
   def awshealth(self, apiCall, pollingRegion, services, *statusCodes):
     # describe affected entities
@@ -63,6 +65,7 @@ class abstractionLayer:
       logger.warn("Logging Exception: "+ str(err)+ "\n")
       return str(err)
       exit()
+      
       
   def awsSTSRole(self, apiCall, roleARN):
     
@@ -95,6 +98,7 @@ class abstractionLayer:
     else:
       return assumeRole
   
+  
   def roleDataExtraction(self, assumeRoleCredentials):
     # extracting credentials from the Roles created in particular session
     tmpCredentials = list()
@@ -116,6 +120,7 @@ class abstractionLayer:
     else:
       return tmpCredentials
       
+  
   # Use the assumed clients temporary security credentials to spin new Boto3 client instance
   
   def clientSpinStatusCheck(self, externService, tmpCredentials):
@@ -181,7 +186,7 @@ class abstractionLayer:
                 "groupId": (eachInstance.network_interfaces_attribute[0]["Groups"])[0]["GroupId"],
                 "MacAddress": eachInstance.network_interfaces_attribute[0]["MacAddress"],
                 "ownerId": eachInstance.network_interfaces_attribute[0]["OwnerId"],
-                "privateIPaddr": eachInstance.network_interfaces_attribute[0]["PrivateIpAddress"],
+                "privateIpAddr": eachInstance.network_interfaces_attribute[0]["PrivateIpAddress"],
                 "networkStatus": eachInstance.network_interfaces_attribute[0]["Status"],
                 "httpEndpoint": eachInstance.metadata_options["HttpEndpoint"],
                 "placementZone": eachInstance.placement["AvailabilityZone"],
@@ -257,6 +262,7 @@ class abstractionLayer:
       logger.exception("Logging exception error for Spin New Client method: "+ str(outerErr)+ "\n")
       raise
       exit()  
+  
   
   def decodeAuthMessage(self):
     

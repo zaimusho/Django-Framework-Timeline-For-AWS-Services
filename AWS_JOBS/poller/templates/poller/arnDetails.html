@@ -5,7 +5,7 @@
     <div class="bg text-center">
         <!--Div for Centered Text & Input-->
         <div class="centered">
-            <Form id="poller" action="{% url 'home-poller' %}" method="POST">
+            <Form id="poller" action="{% url 'status-logger' %}" method="POST">
                 {% csrf_token %}
                 <p class="secondLine">AWS &nbsp;ARN &nbsp;DETAILS</p>
                 <p> <input class="InputStyle" placeholder="Region...  &nbsp; "  name="REGION" style="font-family:Arial, FontAwesome" type="text"> </p>

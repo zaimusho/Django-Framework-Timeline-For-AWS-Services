@@ -11,10 +11,11 @@ loggingFormat = "[%(filename)s: %(lineno)s- %(funcName)20s() ]  %(message)s"
 logging.basicConfig(format=loggingFormat)
 logger.setLevel(logging.DEBUG)
 
+
 urlpatterns = [
-    path('', views.ingestAPICall, name='home-poller'),
+    path('', views.idealFunc, name='home-poller'),
     path('createDetails/', views.requestService, name='create-details'),
-    path('instanceStatus', views.instanceStatus, name='status-logger')
+    path('instanceStatus/', views.instanceStatus, name='status-logger')
     
 ]
 

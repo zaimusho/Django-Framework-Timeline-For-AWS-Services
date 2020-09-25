@@ -49,48 +49,39 @@
 
   <!--Table body-->
   <tbody>
-    <tr>
-      <th scope="row">1</th>
-      <td>Kate</td>
-      <td>Moss</td>
-      <td>USA</td>
-      <td>New York City</td>
-      <td>Web Designer</td>
-      <td>23</td>
-    </tr>
-    
+   
     {% for instance in instances %}
         <tr>
-            <th scope="row">3</th>
-            <td>{{instance.instanceId}}</td>
-            <td>{{instance.ownerId}}</td>
-            <td>{{instance.type}}</td>
-            <td>{{instance.platform}}</td>
-            <td>{{instance.kernelId}}</td>
-            <td>{{instance.hypervisor}}</td>
-            <td>{{instance.architecture}}</td>
-            <td>{{instance.rootDevice}}</td>
-            <td>{{instance.Arn}}</td>
-            <td>{{instance.ArnId}}</td>
-            <td>{{instance.status}}</td>
-            <td>{{instance.statusCode}}</td>
-            <td>{{instance.launchtime}}</td>
-            <td>{{instance.placementZone}}</td>
-            <td>{{instance.tenancy}}</td>
-            <td>{{instance.state}}</td>
-            <td>{{instance.tranReason}}</td>
-            <td>{{instance.ami_index}}</td>
-            <td>{{instance.clientToken}}</td>
-            <td>{{instance.hibernation}}</td>
-            <td>{{instance.ebs}}</td>
-            <td>{{instance.image}}</td>
-            <td>{{instance.interface}}</td>
-            <td>{{instance.stateReason}}</td>
-            <td>{{instance.groupId}}</td>
-            <td>{{instance.MacAddress}}</td>
-            <td>{{instance.privateIpAddr}}</td>
-            <td>{{instance.networkStatus}}</td>
-            <td>{{instance.httpEndpoint}}</td>
+            <th scope="row">{{ forloop.counter }}</th>
+            <td>{{ instance.instanceId }}</td>
+            <td>{{ instance.ownerId }}</td>
+            <td>{{ instance.type }}</td>
+            <td>{{ instance.platform }}</td>
+            <td>{{ instance.kernelId }}</td>
+            <td>{{ instance.hypervisor }}</td>
+            <td>{{ instance.architecture }}</td>
+            <td>{{ instance.rootDevice }}</td>
+            <td>{{ instance.Arn }}</td>
+            <td>{{ instance.ArnId }}</td>
+            <td>{{ instance.status }}</td>
+            <td>{{ instance.statusCode }}</td>
+            <td>{{ instance.launchtime }}</td>
+            <td>{{ instance.placementZone }}</td>
+            <td>{{ instance.tenancy }}</td>
+            <td>{{ instance.state }}</td>
+            <td>{{ instance.tranReason }}</td>
+            <td>{{ instance.ami_index }}</td>
+            <td>{{ instance.clientToken }}</td>
+            <td>{{ instance.hibernation }}</td>
+            <td>{{ instance.ebs }}</td>
+            <td>{{ instance.image }}</td>
+            <td>{{ instance.interface }}</td>
+            <td>{{ instance.stateReason }}</td>
+            <td>{{ instance.groupId }}</td>
+            <td>{{ instance.MacAddress }}</td>
+            <td>{{ instance.privateIpAddr }}</td>
+            <td>{{ instance.networkStatus }}</td>
+            <td>{{ instance.httpEndpoint }}</td>
 
         </tr>
     {% endfor %}
