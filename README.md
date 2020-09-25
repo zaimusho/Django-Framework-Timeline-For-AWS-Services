@@ -47,48 +47,41 @@ region = YOUR_PREFERRED_REGION <br>
 **Tree Structure of working Django directory :** <br>
 
 .
-├── AWS_CLI <br>
-│   ├── awsClass.py <br>
-│   ├── awsPolling.py<br>
-│   ├── dumpObj.json<br>
-│   ├── mod<br>
-│   │   ├── alpha.py<br>
-│   │   ├── beta.py<br>
-│   │   └── __init__.py<br>
-│   ├── parse.py<br>
-│   ├── Pipfile<br>
-│   └── Pipfile.lock<br>
-├── djangoAWS_Jobs<br>
+├── AWS_JOBS<br>
 │   ├── AWS_JOBS<br>
-│   │   ├── AWS_JOBS<br>
-│   │   │   ├── asgi.py<br>
-│   │   │   ├── __init__.py<br>
-│   │   │   ├── settings.py<br>
-│   │   │   ├── urls.py<br>
-│   │   │   └── wsgi.py<br>
-│   │   ├── manage.py<br>
-│   │   └── poller<br>
-│   │       ├── admin.py<br>
-│   │       ├── apps.py<br>
-│   │       ├── __init__.py<br>
-│   │       ├── migrations<br>
-│   │       │   └── __init__.py<br>
-│   │       ├── models.py<br>
-│   │       ├── static<br>
-│   │       │   └── poller<br>
-│   │       │       └── arn.css<br>
-│   │       ├── templates<br>
-│   │       │   └── poller<br>
-│   │       │       ├── arnDetails.html<br>
-│   │       │       └── baseDesign.html<br>
-│   │       ├── tests.py<br>
-│   │       ├── urls.py<br>
-│   │       └── views.py<br>
-│   ├── Pipfile<br>
-│   └── Pipfile.lock<br>
+│   │   ├── asgi.py<br>
+│   │   ├── __init__.py<br>
+│   │   ├── settings.py<br>
+│   │   ├── urls.py<br>
+│   │   └── wsgi.py<br>
+│   ├── db.sqlite3<br>
+│   ├── manage.py<br>
+│   ├── poller<br>
+│   │   ├── abstraction.py<br>
+│   │   ├── admin.py<br>
+│   │   ├── apps.py<br>
+│   │   ├── __init__.py<br>
+│   │   ├── migrations<br>
+│   │   │   ├── 0001_initial.py<br>
+│   │   │   └── __init__.py<br>
+│   │   ├── models.py<br>
+│   │   ├── static<br>
+│   │   │   └── poller<br>
+│   │   │       └── arn.css<br>
+│   │   ├── templates<br>
+│   │   │   └── poller<br>
+│   │   │       ├── arnDetails.html<br>
+│   │   │       ├── baseDesign.html<br>
+│   │   │       ├── instanceStatus.html<br>
+│   │   │       └── viewer.html<br>
+│   │   ├── tests.py<br>
+│   │   ├── urls.py<br>
+│   │   └── views.py<br>
+│   └── Pylint.txt<br>
+├── Pipfile<br>
+├── Pipfile.lock<br>
 ├── README.md<br>
 └── requirements.txt<br>
-
 
 
 **AWS Permission Policy and Trust Relationship** <br>
