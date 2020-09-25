@@ -128,8 +128,9 @@ class awsClass:
   
   def clientSpinStatusCheck(self, externService, tmpCredentials):
     
-    # Executing the client using STS credentails
-    response= dict()
+    # Executing the client using STS temporary credentails
+    response, instance = dict(), dict()
+    instanceStack = list()
     flag = False
 
     try:
@@ -142,10 +143,11 @@ class awsClass:
         session = boto3.Session(region_name=self.REGION)
         logger.info(session)
         
+        # Client session for flag condition block 
         assumedClient = session.client(service_name=externService, 
                                       aws_access_key_id = securityID, 
                                       aws_secret_access_key = securitySecret,
-                                      aws_session_token = securityToken,)
+                                      aws_session_token = securityToken)
         
         # assumedClient = session.client(service_name=externService)
         
@@ -158,18 +160,63 @@ class awsClass:
           
           for eachRegion in scannedRegion['Regions']:
             # allRegions.append(eachRegion['RegionName'])
-            session = boto3.Session(profile_name="development", region_name=eachRegion["RegionName"])
+            
+            session = boto3.Session(aws_access_key_id = securityID, 
+                                    aws_secret_access_key = securitySecret,
+                                    aws_session_token = securityToken, 
+                                    region_name=eachRegion["RegionName"])
+            
+            
             logger.info("Iterated session Object " + str(session) + "\n")
             fetchResource = session.resource(service_name=externService)
             
             for eachInstance in fetchResource.instances.all():
-              print(eachInstance.instance_id, eachInstance.instance_type, eachInstance.instance_lifecycle, eachInstance.platform, 
-                    eachInstance.hypervisor, eachInstance.architecture, eachInstance.root_device_name, eachInstance.iam_instance_profile,
-                    eachInstance.launch_time, eachInstance.placement, eachInstance.state, eachInstance.state_transition_reason, 
-                    eachInstance.ami_launch_index, eachInstance.client_token, eachInstance.image, eachInstance.network_interfaces, 
-                    eachInstance.metadata_options, eachInstance.state_reason, eachInstance.network_interfaces_attribute, 
-                    "\n")            
-            
+              # inline response catch for the instance history
+              
+              # print(eachInstance.instance_id, eachInstance.instance_type, eachInstance.platform, 
+              #       eachInstance.hypervisor, eachInstance.architecture, eachInstance.root_device_name, eachInstance.iam_instance_profile,
+              #       eachInstance.launch_time, eachInstance.placement, eachInstance.state, eachInstance.state_transition_reason, 
+              #       eachInstance.ami_launch_index, eachInstance.client_token, eachInstance.image, eachInstance.network_interfaces, 
+              #       eachInstance.metadata_options, eachInstance.state_reason, eachInstance.network_interfaces_attribute, 
+              #       "\n")            
+           
+              instance = {
+                "instanceId": eachInstance.instance_id,
+                "type": eachInstance.instance_type,
+                "platform": eachInstance.platform,
+                "kernelId": eachInstance.kernel_id,
+                "hypervisor": eachInstance.hypervisor,
+                "architecture": eachInstance.architecture,
+                "rootDevice": eachInstance.root_device_name,
+                "lauchtime": eachInstance.launch_time.strftime("%Y-%m-%d %I:%M %p"),
+                "state": eachInstance.state,
+                "tranReason": eachInstance.state_transition_reason,
+                "ami_index": eachInstance.ami_launch_index,
+                "clientToken": eachInstance.client_token,
+                "hibernation": eachInstance.hibernation_options["Configured"],
+                "ebs": eachInstance.ebs_optimized,
+                "image": eachInstance.image,
+                "interface": eachInstance.network_interfaces[0],
+                "stateReason": eachInstance.state_reason["Message"],
+                "groupId": (eachInstance.network_interfaces_attribute[0]["Groups"])[0]["GroupId"],
+                "MacAddress": eachInstance.network_interfaces_attribute[0]["MacAddress"],
+                "ownerId": eachInstance.network_interfaces_attribute[0]["OwnerId"],
+                "privateIPaddr": eachInstance.network_interfaces_attribute[0]["PrivateIpAddress"],
+                "networkStatus": eachInstance.network_interfaces_attribute[0]["Status"],
+                "httpEndpoint": eachInstance.metadata_options["HttpEndpoint"],
+                "placementZone": eachInstance.placement["AvailabilityZone"],
+                "tenancy": eachInstance.placement["Tenancy"],
+                "Arn": eachInstance.iam_instance_profile["Arn"],
+                "ArnId": eachInstance.iam_instance_profile["Id"],
+                "status": eachInstance.state["Name"],
+                "statusCode": eachInstance.state["Code"],
+                
+                
+              }
+              instanceStack.append(instance)
+              
+              logger.info("Information logged for AWS region: {}" .format(eachRegion["RegionName"]) + "\n")
+              
           logger.info("Variable components of AWS instance Acquired !")
            
         except Exception as err:
@@ -192,7 +239,11 @@ class awsClass:
           
           else:
             return response
-            
+        
+        else:
+          pprint.pprint(instanceStack)
+          
+      
     except Exception as outerErr:
       logger.exception("Logging exception error for Spin New Client method: "+ str(outerErr)+ "\n")
       raise

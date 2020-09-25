@@ -4,7 +4,7 @@ import pprint, json
 from django.shortcuts import render, redirect
 from django.http import HttpResponse
 from .models import arnDetails as userModel
-
+from .abstraction import abstractionLayer as layerMethod
 
 # logging proc structure for the valid executable script and throwable exception
 
@@ -13,6 +13,37 @@ loggingFormat = "[%(filename)s: %(lineno)s- %(funcName)20s() ]  %(message)s"
 logging.basicConfig(format=loggingFormat)
 logger.setLevel(logging.DEBUG)
 
+# dummy data for isntance status check functionality
+data = [
+    {
+        "instanceId": "12",
+        "type": "arm",
+        "lifecycle": "ended",
+        "hypervisor": "None",
+        "architecture": "i386",
+        "rootdDevice": "/dev/sda",
+        "iam": "arn::12345:12",
+        "lauchtime": "2020-8-12",
+        "placement": "us-east-2",
+        "state": "running",
+        "tranReason": "cron jobs response"
+        
+    },
+    {
+        "instanceId": "13",
+        "type": "arm",
+        "lifecycle": "ended",
+        "hypervisor": "None",
+        "architecture": "i386",
+        "rootdevice": "/dev/sda",
+        "iam": "arn::12345:12",
+        "lauchtime": "2020-8-12",
+        "placement": "us-east-2",
+        "state": "running",
+        "tranReason": "cron jobs response"
+        
+    }
+]
 
 def home(request):
     
@@ -49,6 +80,9 @@ def details(request):
     return render(request, "poller/arnDetails.html", context=context)
 
 def instanceStatus(request):
-    context = {}
+    
+    context = {
+        "instances": data
+    }
     
     return render(request, "poller/instanceStatus.html", context=context)
