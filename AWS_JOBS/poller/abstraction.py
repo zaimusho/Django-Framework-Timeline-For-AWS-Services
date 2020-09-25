@@ -8,7 +8,7 @@ from botocore.exceptions import NoCredentialsError, InvalidSTSRegionalEndpointsC
 
 # logging proc structure for the valid executable script and throwable exception
 
-logger = logging.getLogger('root')
+logger = logging.getLogger(__name__)
 loggingFormat = "[%(filename)s: %(lineno)s- %(funcName)20s() ]  %(message)s"
 logging.basicConfig(format=loggingFormat)
 logger.setLevel(logging.DEBUG)
@@ -23,23 +23,25 @@ class awsClass:
   def scanRegion(self, service):
     try:
       # scan AWS Regions available for services
-      sessionObj = boto3.Session(profile_name="development", region_name=self.REGION)
+      sessionObj = boto3.Session(profile_name="betaDev", region_name=self.REGION)
       logger.info("Session Object: " + str(sessionObj))
       client = sessionObj.client(service_name=service)
       logger.info(client)
       serviceRegions = client.describe_regions()
       
-      return serviceRegions
-    
     except Exception as error:
-      logger.warn(str(error))
+      logger.exception(str(error))
+      raise
       exit()
+    
+    else:
+      return serviceRegions
     
   def awshealth(self, apiCall, pollingRegion, services, *statusCodes):
     # describe affected entities
     # management by access
     
-    Session = boto3.Session(profile_name="development", region_name=pollingRegion)
+    Session = boto3.Session(profile_name="betaDev", region_name=pollingRegion)
     Client = Session.client(apiCall)
     logger.info(Client)
     
@@ -65,32 +67,35 @@ class awsClass:
   def awsSTSRole(self, apiCall, roleARN): #, **policyJSON):
     
     # experimenting the aws STS roles configurations
-    Session = boto3.Session(profile_name="development", region_name=self.REGION)
+    Session = boto3.Session(profile_name="betaDev", region_name=self.REGION)
+    # Session = boto3.Session(region_name=self.REGION)
     Client = Session.client(apiCall)
+    
     logger.debug(Client)
     
     try:
       assumeRole = Client.assume_role(
         RoleArn= roleARN,
-        RoleSessionName= 'newSession',
+        RoleSessionName= 'aAssumeRoleSession',
         PolicyArns=[
                     {
-                      "arn": "arn:aws:iam::179790312905:policy/STS"
+                      "arn": "arn:aws:iam::179790312905:policy/AWS_AssumeRolePolicy"
                     },
                   ],
         # Policy= str(policyJSON['policyJSON']),
         ExternalId= 'assumeRoleAWS'
       )
       
-      logger.info(roleARN)
-      
-      return assumeRole
+      logger.info(assumeRole)
       
     except  Client.exceptions.MalformedPolicyDocumentException as endPointErr:
-      logger.warn("Logging Exception: "+ str(endPointErr)+ "\n")
-      return str(endPointErr)
+      logger.exception("Logging Exception: "+ str(endPointErr)+ "\n")
+      raise
       exit()
-
+      
+    else:
+      return assumeRole
+  
   def roleDataExtraction(self, assumeRoleCredentials): #, filePath):
     
     # extracting credentials from the Roles created in particular session
@@ -108,47 +113,96 @@ class awsClass:
       
       # objFile.close()
       
-      return tmpCredentials
+      logger.info("Temporary Credentials Retrieved")
       # return assumeRoleSTSCredentials
       
     except NoCredentialsError as credsErr:
-      logger.warn("Logging exception: "+ str(credsErr)+ "\n")
-      return str(credsErr)
+      logger.exception("Logging exception: "+ str(credsErr)+ "\n")
+      raise
       exit()
+      
+    else:
+      return tmpCredentials
       
   # Use the assumed clients temporary security credentials to spin new Boto3 client instance
   
-  def spinNewClient(self, externService, tmpCredentials):
+  def clientSpinStatusCheck(self, externService, tmpCredentials):
     
     # Executing the client using STS credentails
     response= dict()
-    securityID = tmpCredentials[0]
-    securitySecret = tmpCredentials[1]
-    securityToken = tmpCredentials[2]
-    session = boto3.Session(profile_name="development", region_name=self.REGION)
-    assumedClient = session.client(service_name=externService, aws_access_key_id = securityID, 
-                                aws_secret_access_key = securitySecret,
-                                aws_session_token = securityToken)
+    flag = False
+
+    try:
+      if tmpCredentials:
+        securityID = tmpCredentials[0]
+        securitySecret = tmpCredentials[1]
+        securityToken = tmpCredentials[2]
+        
+        # print(securityID, securitySecret, securityToken)
+        session = boto3.Session(region_name=self.REGION)
+        logger.info(session)
+        
+        assumedClient = session.client(service_name=externService, 
+                                      aws_access_key_id = securityID, 
+                                      aws_secret_access_key = securitySecret,
+                                      aws_session_token = securityToken,)
+        
+        # assumedClient = session.client(service_name=externService)
+        
+        logger.info(assumedClient)
+        
+        try:
+          # scanning the AWS regions for entire spinned instances
+          scannedRegion = self.scanRegion(service=externService)
+          logger.info("Listing the AWS instances Region Worldwide")
+          
+          for eachRegion in scannedRegion['Regions']:
+            # allRegions.append(eachRegion['RegionName'])
+            session = boto3.Session(profile_name="development", region_name=eachRegion["RegionName"])
+            logger.info("Iterated session Object " + str(session) + "\n")
+            fetchResource = session.resource(service_name=externService)
+            
+            for eachInstance in fetchResource.instances.all():
+              print(eachInstance.instance_id, eachInstance.instance_type, eachInstance.instance_lifecycle, eachInstance.platform, 
+                    eachInstance.hypervisor, eachInstance.architecture, eachInstance.root_device_name, eachInstance.iam_instance_profile,
+                    eachInstance.launch_time, eachInstance.placement, eachInstance.state, eachInstance.state_transition_reason, 
+                    eachInstance.ami_launch_index, eachInstance.client_token, eachInstance.outpost_arn, eachInstance.image, 
+                    eachInstance.network_interfaces, eachInstance.metadata_options, eachInstance.state_reason, eachInstance.network_interfaces_attribute, 
+                    "\n")            
+            
+          logger.info("Variable components of AWS instance Acquired !")
+           
+        except Exception as err:
+          logger.exception("Logging externService exception: "+ str(err)+ "\n")
+          raise
+        
+        
+        if flag:
+          try:
+            if externService == "ec2":
+              # explicity defining the system, internal state of running instances
+              response = assumedClient.describe_instance_status(IncludeAllInstances=True, DryRun=False)
+              # response = assumedClient.describe_instances(DryRun=False)
+              logging.debug(response)
+            
+          except Exception as err:
+            logger.exception("Logging externService exception: "+ str(err)+ "\n")
+            exit()
+            
+          
+          else:
+            return response
+            
+    except Exception as outerErr:
+      logger.exception("Logging exception error for Spin New Client method: "+ str(outerErr)+ "\n")
+      raise
+      exit()    
     
-    # assumedClient = session.client(service_name=externService)
-    
-    # Check on status for executing instance with resources parameters 
-    # clientResources = session.resource(service_name=externService)
-    # response = clientResources.instances.all()
-    # print(clientResources)
-    logging.debug(assumedClient)
-    
-    if externService == "ec2":
-      response = assumedClient.describe_instance_status(IncludeAllInstances=True)
-      logging.debug(response)
-    
-    return response
-    
-    
+     
   def decodeAuthMessage(self):
     
     # encoding method call for authorisation message
-    session = boto3.Session(profile_name="development", region_name=self.REGION)
+    session = boto3.Session(profile_name="betaDev", region_name=self.REGION)
     Client = session.client('sts')
     logger.debug(Client)
     
