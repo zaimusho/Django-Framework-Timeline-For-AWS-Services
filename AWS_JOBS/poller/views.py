@@ -8,7 +8,7 @@ from .models import arnDetails as userModel
 
 # logging proc structure for the valid executable script and throwable exception
 
-logger = logging.getLogger('root')
+logger = logging.getLogger(__name__)
 loggingFormat = "[%(filename)s: %(lineno)s- %(funcName)20s() ]  %(message)s"
 logging.basicConfig(format=loggingFormat)
 logger.setLevel(logging.DEBUG)
@@ -47,3 +47,8 @@ def home(request):
 def details(request):
     context = {}
     return render(request, "poller/arnDetails.html", context=context)
+
+def instanceStatus(request):
+    context = {}
+    
+    return render(request, "poller/instanceStatus.html", context=context)

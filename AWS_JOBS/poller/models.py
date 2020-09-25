@@ -7,25 +7,22 @@ from django.db import models
 
 # logging proc structure for the valid executable script and throwable exception
 
-logger = logging.getLogger('root')
+logger = logging.getLogger(__name__)
 loggingFormat = "[%(filename)s: %(lineno)s- %(funcName)20s() ]  %(message)s"
 logging.basicConfig(format=loggingFormat)
 logger.setLevel(logging.DEBUG)
 
 
 class arnDetails(models.Model):
-    SERVICES = (
-        ('vpn', 'vpn'),
-        ('S3', 'S3')
-    )
     region = models.CharField(max_length=100, null=True)
-    service = models.CharField(max_length=20, null=True, choices=SERVICES)
+    service = models.CharField(max_length=20, null=False)
     apis = models.CharField(max_length=100, null=True)
     arn = models.CharField(max_length=200, null=False)
     datetime = models.DateTimeField(auto_now_add=True, null=False)
     
 logger.info(arnDetails)
-    
+
+
 
     
     

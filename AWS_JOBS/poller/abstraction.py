@@ -166,8 +166,8 @@ class awsClass:
               print(eachInstance.instance_id, eachInstance.instance_type, eachInstance.instance_lifecycle, eachInstance.platform, 
                     eachInstance.hypervisor, eachInstance.architecture, eachInstance.root_device_name, eachInstance.iam_instance_profile,
                     eachInstance.launch_time, eachInstance.placement, eachInstance.state, eachInstance.state_transition_reason, 
-                    eachInstance.ami_launch_index, eachInstance.client_token, eachInstance.outpost_arn, eachInstance.image, 
-                    eachInstance.network_interfaces, eachInstance.metadata_options, eachInstance.state_reason, eachInstance.network_interfaces_attribute, 
+                    eachInstance.ami_launch_index, eachInstance.client_token, eachInstance.image, eachInstance.network_interfaces, 
+                    eachInstance.metadata_options, eachInstance.state_reason, eachInstance.network_interfaces_attribute, 
                     "\n")            
             
           logger.info("Variable components of AWS instance Acquired !")
