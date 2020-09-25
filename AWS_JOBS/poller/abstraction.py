@@ -14,7 +14,7 @@ logging.basicConfig(format=loggingFormat)
 logger.setLevel(logging.DEBUG)
 
 
-class awsClass:
+class abstractionLayer:
   
   def __init__(self, REGION):
     super().__init__()
@@ -64,7 +64,7 @@ class awsClass:
       return str(err)
       exit()
       
-  def awsSTSRole(self, apiCall, roleARN): #, **policyJSON):
+  def awsSTSRole(self, apiCall, roleARN):
     
     # experimenting the aws STS roles configurations
     Session = boto3.Session(profile_name="betaDev", region_name=self.REGION)
@@ -82,7 +82,6 @@ class awsClass:
                       "arn": "arn:aws:iam::179790312905:policy/AWS_AssumeRolePolicy"
                     },
                   ],
-        # Policy= str(policyJSON['policyJSON']),
         ExternalId= 'assumeRoleAWS'
       )
       
@@ -96,25 +95,18 @@ class awsClass:
     else:
       return assumeRole
   
-  def roleDataExtraction(self, assumeRoleCredentials): #, filePath):
-    
+  def roleDataExtraction(self, assumeRoleCredentials):
     # extracting credentials from the Roles created in particular session
     tmpCredentials = list()
     
-    try:
-      # objFile = open(filePath, "r")
-      # policyJSON = json.load(objFile)
-       
+    try: 
       # unpacking the id, secret and security token
     
       tmpCredentials.append(assumeRoleCredentials['Credentials']['AccessKeyId'])
       tmpCredentials.append(assumeRoleCredentials['Credentials']['SecretAccessKey']) 
       tmpCredentials.append(assumeRoleCredentials['Credentials']['SessionToken'])
       
-      # objFile.close()
-      
       logger.info("Temporary Credentials Retrieved")
-      # return assumeRoleSTSCredentials
       
     except NoCredentialsError as credsErr:
       logger.exception("Logging exception: "+ str(credsErr)+ "\n")
@@ -140,18 +132,6 @@ class awsClass:
         securityToken = tmpCredentials[2]
         
         # print(securityID, securitySecret, securityToken)
-        session = boto3.Session(region_name=self.REGION)
-        logger.info(session)
-        
-        # Client session for flag condition block 
-        assumedClient = session.client(service_name=externService, 
-                                      aws_access_key_id = securityID, 
-                                      aws_secret_access_key = securitySecret,
-                                      aws_session_token = securityToken)
-        
-        # assumedClient = session.client(service_name=externService)
-        
-        logger.info(assumedClient)
         
         try:
           # scanning the AWS regions for entire spinned instances
@@ -173,12 +153,12 @@ class awsClass:
             for eachInstance in fetchResource.instances.all():
               # inline response catch for the instance history
               
-              # print(eachInstance.instance_id, eachInstance.instance_type, eachInstance.platform, 
-              #       eachInstance.hypervisor, eachInstance.architecture, eachInstance.root_device_name, eachInstance.iam_instance_profile,
-              #       eachInstance.launch_time, eachInstance.placement, eachInstance.state, eachInstance.state_transition_reason, 
-              #       eachInstance.ami_launch_index, eachInstance.client_token, eachInstance.image, eachInstance.network_interfaces, 
-              #       eachInstance.metadata_options, eachInstance.state_reason, eachInstance.network_interfaces_attribute, 
-              #       "\n")            
+              print(eachInstance.instance_id, eachInstance.instance_type, eachInstance.platform, 
+                    eachInstance.hypervisor, eachInstance.architecture, eachInstance.root_device_name, eachInstance.iam_instance_profile,
+                    eachInstance.launch_time, eachInstance.placement, eachInstance.state, eachInstance.state_transition_reason, 
+                    eachInstance.ami_launch_index, eachInstance.client_token, eachInstance.image, eachInstance.network_interfaces, 
+                    eachInstance.metadata_options, eachInstance.state_reason, eachInstance.network_interfaces_attribute, 
+                    "\n")            
            
               instance = {
                 "instanceId": eachInstance.instance_id,
@@ -211,8 +191,8 @@ class awsClass:
                 "status": eachInstance.state["Name"],
                 "statusCode": eachInstance.state["Code"],
                 
-                
               }
+              
               instanceStack.append(instance)
               
               logger.info("Information logged for AWS region: {}" .format(eachRegion["RegionName"]) + "\n")
@@ -223,13 +203,46 @@ class awsClass:
           logger.exception("Logging externService exception: "+ str(err)+ "\n")
           raise
         
+        else:
+          return instanceStack
+            
+    except Exception as outerErr:
+      logger.exception("Logging exception error for Spin New Client method: "+ str(outerErr)+ "\n")
+      raise
+      exit()    
+    
+     
+  def describeInstance(self, externService, tmpCredentials):
+    # Executing the client using STS temporary credentails
+    response = dict()
+    flag = True
+
+    try:
+      if tmpCredentials:
+        securityID = tmpCredentials[0]
+        securitySecret = tmpCredentials[1]
+        securityToken = tmpCredentials[2]
+        
+        # print(securityID, securitySecret, securityToken)
+        session = boto3.Session(region_name=self.REGION)
+        logger.info(session)
+        
+        # Client session for flag condition block 
+        assumedClient = session.client(service_name=externService, 
+                                      aws_access_key_id = securityID, 
+                                      aws_secret_access_key = securitySecret,
+                                      aws_session_token = securityToken)
+        
+        # assumedClient = session.client(service_name=externService)
+        
+        logger.info(assumedClient)
         
         if flag:
           try:
             if externService == "ec2":
               # explicity defining the system, internal state of running instances
-              response = assumedClient.describe_instance_status(IncludeAllInstances=True, DryRun=False)
-              # response = assumedClient.describe_instances(DryRun=False)
+              # response = assumedClient.describe_instance_status(IncludeAllInstances=True, DryRun=False)
+              response = assumedClient.describe_instances(DryRun=False)
               logging.debug(response)
             
           except Exception as err:
@@ -239,17 +252,12 @@ class awsClass:
           
           else:
             return response
-        
-        else:
-          pprint.pprint(instanceStack)
-          
       
     except Exception as outerErr:
       logger.exception("Logging exception error for Spin New Client method: "+ str(outerErr)+ "\n")
       raise
-      exit()    
-    
-     
+      exit()  
+  
   def decodeAuthMessage(self):
     
     # encoding method call for authorisation message

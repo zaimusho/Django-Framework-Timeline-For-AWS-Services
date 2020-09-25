@@ -13,23 +13,35 @@
   <thead>
     <tr>
       <th>#</th>
-      <th>InstanceID</th>
-      <th>InstanceType</th>
-      <th>Lifecycle</th>
+      <th>Instance ID</th>
+      <th>Owner ID</th>
+      <th>Instance Type</th>
       <th>Platform</th>
+      <th>Kernel</th>
       <th>Hypervisor</th>
       <th>Architecture</th>
-      <th>RootDevice</th>
-      <th>IAM </th>
+      <th>Root Device</th>
+      <th>ARN </th>
+      <th>ARN ID</th>
+      <th>Status</th>
+      <th>Status Code</th>
       <th>LaunchTime</th>
-      <th>Placement</th>
+      <th>Zone</th>
+      <th>Tenancy</th>
       <th>State</th>
-      <th>TransitionReason</th>
+      <th>Transition Reason</th>
       <th>AMI Index</th>
-      <th>ClientToken</th>
+      <th>Client Token</th>
+      <th>Hibernation</th>
+      <th>EBS</th>
       <th>Image</th>
-      <th>NetworkInterface</th>
-      <th>StateReason</th>
+      <th>Network Interface</th>
+      <th>State Reason</th>
+      <th>Group ID</th>
+      <th>MAC Address</th>
+      <th>Private IP</th>
+      <th>Network Status</th>
+      <th>EndPoint</th>
 
     </tr>
   </thead>
@@ -51,17 +63,34 @@
         <tr>
             <th scope="row">3</th>
             <td>{{instance.instanceId}}</td>
+            <td>{{instance.ownerId}}</td>
             <td>{{instance.type}}</td>
-            <td>{{instance.lifecycle}}</td>
             <td>{{instance.platform}}</td>
+            <td>{{instance.kernelId}}</td>
             <td>{{instance.hypervisor}}</td>
             <td>{{instance.architecture}}</td>
-            <td>{{instance.rootdevice}}</td>
-            <td>{{instance.iam}}</td>
+            <td>{{instance.rootDevice}}</td>
+            <td>{{instance.Arn}}</td>
+            <td>{{instance.ArnId}}</td>
+            <td>{{instance.status}}</td>
+            <td>{{instance.statusCode}}</td>
             <td>{{instance.launchtime}}</td>
-            <td>{{instance.placement}}</td>
+            <td>{{instance.placementZone}}</td>
+            <td>{{instance.tenancy}}</td>
             <td>{{instance.state}}</td>
             <td>{{instance.tranReason}}</td>
+            <td>{{instance.ami_index}}</td>
+            <td>{{instance.clientToken}}</td>
+            <td>{{instance.hibernation}}</td>
+            <td>{{instance.ebs}}</td>
+            <td>{{instance.image}}</td>
+            <td>{{instance.interface}}</td>
+            <td>{{instance.stateReason}}</td>
+            <td>{{instance.groupId}}</td>
+            <td>{{instance.MacAddress}}</td>
+            <td>{{instance.privateIpAddr}}</td>
+            <td>{{instance.networkStatus}}</td>
+            <td>{{instance.httpEndpoint}}</td>
 
         </tr>
     {% endfor %}

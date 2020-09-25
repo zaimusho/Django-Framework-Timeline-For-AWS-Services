@@ -12,8 +12,8 @@ logging.basicConfig(format=loggingFormat)
 logger.setLevel(logging.DEBUG)
 
 urlpatterns = [
-    path('', views.home, name='home-poller'),
-    path('createDetails/', views.details, name='create-details'),
+    path('', views.ingestAPICall, name='home-poller'),
+    path('createDetails/', views.requestService, name='create-details'),
     path('instanceStatus', views.instanceStatus, name='status-logger')
     
 ]
