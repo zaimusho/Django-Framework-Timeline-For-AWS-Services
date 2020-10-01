@@ -11,6 +11,10 @@ pylint = "*"
 boto3 = "==1.14.55"
 pymongo = "==3.11.0"
 requests = "==2.24.0"
+pytest = "*"
+pytest-django = "*"
+pytest-cov = "*"
+mixer = "*"
 
 [requires]
 python_version = "3.6"

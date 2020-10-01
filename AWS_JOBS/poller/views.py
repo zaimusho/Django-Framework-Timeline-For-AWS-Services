@@ -3,6 +3,7 @@ import logging
 import pprint, json
 from django.shortcuts import render, redirect
 from django.http import HttpResponse
+from django.contrib.auth.decorators import login_required
 from .models import arnDetails
 from .abstraction import abstractionLayer as layerClass
 
@@ -22,20 +23,6 @@ data = [
         "hypervisor": "None",
         "architecture": "i386",
         "rootdDevice": "/dev/sda",
-        "iam": "arn::12345:12",
-        "lauchtime": "2020-8-12",
-        "placement": "us-east-2",
-        "state": "running",
-        "tranReason": "cron jobs response"
-        
-    },
-    {
-        "instanceId": "13",
-        "type": "arm",
-        "lifecycle": "ended",
-        "hypervisor": "None",
-        "architecture": "i386",
-        "rootdevice": "/dev/sda",
         "iam": "arn::12345:12",
         "lauchtime": "2020-8-12",
         "placement": "us-east-2",
@@ -129,7 +116,7 @@ def instanceController(region, externCall, credentials):
     else:
         return objStatus
 
-
+@login_required
 def instanceStatus(request):
     
     # calling the ingestAPI and then instanceController to address the status 
