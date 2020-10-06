@@ -1,5 +1,6 @@
 
 import logging
+import sys
 import pprint, json
 from django.shortcuts import render, redirect
 from django.http import HttpResponse
@@ -63,7 +64,7 @@ def serviceDetail(request):
         
     else:
         print("Request not accessed !!! ")
-        exit()
+        sys.exit(1)
         
     return response
 
@@ -90,7 +91,7 @@ def ingestAPICall(response):
         except Exception as err:
             logger.exception("Loggging STS Error: "+ str(err) + "\n")
             raise
-            exit()
+            sys.exit(1)
 
         else:
             return credentials
@@ -98,7 +99,7 @@ def ingestAPICall(response):
     else:
         logger.exception("Role ARN missing to execute the Boto3 API call ! ")
         raise
-        exit()
+        sys.exit(1)
   
         
 def instanceController(region, externCall, credentials):
@@ -111,7 +112,7 @@ def instanceController(region, externCall, credentials):
     except Exception as err:
         logger.exception("Loggging spinned Instance fatal error: "+ str(err) + "\n")
         raise
-        exit()
+        sys.exit(1)
         
     else:
         return objStatus
@@ -129,7 +130,7 @@ def instanceStatus(request):
         
     except Exception as err:
         logger.exception("Error while Executing the InstanceStatus method: "+ str(err) + "\n")
-        exit()
+        sys.exit(1)
     
     else:
         context = {

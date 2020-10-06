@@ -33,7 +33,7 @@ class abstractionLayer:
     except Exception as error:
       logger.exception(str(error))
       raise
-      exit()
+      sys.exit(1)
     
     else:
       return serviceRegions
@@ -64,7 +64,7 @@ class abstractionLayer:
     except Client.exceptions.InvalidPaginationToken as err:
       logger.warn("Logging Exception: "+ str(err)+ "\n")
       return str(err)
-      exit()
+      sys.exit(1)
       
       
   def awsSTSRole(self, apiCall, roleARN):
@@ -93,7 +93,7 @@ class abstractionLayer:
     except  Client.exceptions.MalformedPolicyDocumentException as endPointErr:
       logger.exception("Logging Exception: "+ str(endPointErr)+ "\n")
       raise
-      exit()
+      sys.exit(1)
       
     else:
       return assumeRole
@@ -115,7 +115,7 @@ class abstractionLayer:
     except NoCredentialsError as credsErr:
       logger.exception("Logging exception: "+ str(credsErr)+ "\n")
       raise
-      exit()
+      sys.exit(1)
       
     else:
       return tmpCredentials
@@ -214,7 +214,7 @@ class abstractionLayer:
     except Exception as outerErr:
       logger.exception("Logging exception error for Spin New Client method: "+ str(outerErr)+ "\n")
       raise
-      exit()    
+      sys.exit(1)    
     
      
   def describeInstance(self, externService, tmpCredentials):
@@ -252,7 +252,7 @@ class abstractionLayer:
             
           except Exception as err:
             logger.exception("Logging externService exception: "+ str(err)+ "\n")
-            exit()
+            sys.exit(1)
             
           
           else:
@@ -261,7 +261,7 @@ class abstractionLayer:
     except Exception as outerErr:
       logger.exception("Logging exception error for Spin New Client method: "+ str(outerErr)+ "\n")
       raise
-      exit()  
+      sys.exit(1)  
   
   
   def decodeAuthMessage(self):
@@ -284,4 +284,4 @@ class abstractionLayer:
     except Client.exceptions.InvalidAuthorizationMessageException as authMessageErr:
       logger.warn("Logging Exception: "+ str(authMessageErr)+ "\n")
       return str(authMessageErr)
-      exit()
+      sys.exit(1)

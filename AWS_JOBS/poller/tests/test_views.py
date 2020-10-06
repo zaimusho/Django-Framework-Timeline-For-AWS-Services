@@ -2,7 +2,7 @@
 from django.contrib.auth.models import User
 from django.test import TestCase, RequestFactory, Client 
 from django.urls import reverse
-from poller.views import idealFunc, instanceStatus
+from poller.views import idealFunc, instanceStatus, serviceDetail
 from mixer.backend.django import mixer
 
 
@@ -42,7 +42,33 @@ class TestViews(TestCase):
         
         assert response.status_code == 200
         
+    
+    def test_service_details_method_post_action(self):
+        request = RequestFactory().post(self.detail_url,
+                                        {
+                                            'REGION': 'mock-region',
+                                            'SERVICE': 'mock-ec2',
+                                            'API': 'mock-api',
+                                            'ROLEARN': 'mockArn:12345'
+                                            
+                                        } )
+        response = serviceDetail(request)
+        
+        assert response['region'] == 'mock-region'
+        assert response['service'] == 'mock-ec2'
+        assert response['apis'] == 'mock-api'
+        assert response['roleArn'] == 'mockArn:12345'
+               
+        
+    def test_service_details_method_get_action(self):
+        request = RequestFactory().get(self.detail_url)
+        print(request)
+    
+    # need to mock the respective working func 
     def test_instance_status_authenticated(self):
+        # mocking Request Method for accessing the AWS
+        # report parameters
+        
         request = RequestFactory().post(self.status_url, 
                                         {
                                             'REGION': 'moc-region',
@@ -51,16 +77,13 @@ class TestViews(TestCase):
                                             'ROLEARN': 'mockArn:12345'
                                             
                                         })
+        
         request.user = mixer.blend(User)
         
-        response = instanceStatus(request)
-        print(response)
+        
+    #     response = instanceStatus(request)
+    #     print(response)
         
         # need to write the assume role code platform
         
     
-    
-    
-    # def test_service_details_method_post_action(self):
-    #     request = RequestFactory().post()
-        
