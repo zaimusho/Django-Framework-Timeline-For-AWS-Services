@@ -126,9 +126,9 @@ class abstractionLayer:
   def clientSpinStatusCheck(self, externService, tmpCredentials):
     
     # Executing the client using STS temporary credentails
-    response, instance = dict(), dict()
+    instance = dict()
     instanceStack = list()
-    flag = False
+    # flag = False
 
     try:
       if tmpCredentials:
