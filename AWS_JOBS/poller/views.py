@@ -29,7 +29,6 @@ data = [
         "placement": "us-east-2",
         "state": "running",
         "tranReason": "cron jobs response"
-        
     }
 ]
 
