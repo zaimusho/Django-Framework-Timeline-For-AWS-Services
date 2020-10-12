@@ -62,7 +62,7 @@ def serviceDetail(request):
             # print(response)
         
     else:
-        print("Request not accessed !!! ")
+        logger.warn("Request not accessed !!! ")
         sys.exit(1)
         
     return response
@@ -103,9 +103,13 @@ def instanceController(region, externCall, credentials):
         
     try:
         awsInstance = layerClass(REGION=region)
+        print(awsInstance)
         logger.info("Spinning the AWS Instance with STS Credentials .")
+        print('1')
         objStatus = awsInstance.clientSpinStatusCheck(externService=externCall, tmpCredentials=credentials)
-        
+        print(objStatus)
+        print("2")
+        exit()
     except Exception as err:
         logger.exception("Loggging spinned Instance fatal error: "+ str(err) + "\n")
         raise
