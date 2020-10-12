@@ -29,7 +29,6 @@ data = [
         "placement": "us-east-2",
         "state": "running",
         "tranReason": "cron jobs response"
-        
     }
 ]
 
@@ -77,7 +76,6 @@ def requestService(request):
 # Controller method for "STS rules" aws service api
    
 def ingestAPICall(response):
-    
     # Logging attributes status for the spinned instances using AssumeRole methodology
     
     if response["roleArn"]:
@@ -98,7 +96,6 @@ def ingestAPICall(response):
     
     else:
         logger.exception("Role ARN missing to execute the Boto3 API call ! ")
-        raise
         sys.exit(1)
   
         
