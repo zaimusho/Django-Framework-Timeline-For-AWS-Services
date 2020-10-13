@@ -69,7 +69,7 @@ def serviceDetail(request):
             # print(response)
         
     else:
-        logger.warn("Request not accessed !!! ")
+        logger.warning("Request not accessed !!! ")
         sys.exit(1)
         
     return response
@@ -80,8 +80,7 @@ def requestService(request):
     return render(request, "poller/arnDetails.html", context=context)
 
 
-# Controller method for "STS rules" aws service api
-   
+# Controller method for "STS rules" aws service api   
 def ingestAPICall(response):
     # Logging attributes status for the spinned instances using AssumeRole methodology
     
@@ -92,9 +91,8 @@ def ingestAPICall(response):
             credentials = awsObj.roleDataExtraction(assumeRoleCredentials=assumeRole)
             logger.debug("STS rule controller for AWS ")
             
-            
         except Exception as err:
-            logger.exception("Loggging STS Error: "+ str(err) + "\n")
+            logger.exception("Logging STS Error: "+ str(err) + "\n")
             sys.exit(1)
 
         else:
@@ -109,13 +107,9 @@ def instanceController(region, externCall, credentials):
         
     try:
         awsInstance = layerClass(REGION=region)
-        print(awsInstance)
         logger.info("Spinning the AWS Instance with STS Credentials .")
-        print('1')
         objStatus = awsInstance.clientSpinStatusCheck(externService=externCall, tmpCredentials=credentials)
-        print(objStatus)
-        print("2")
-        exit()
+        
     except Exception as err:
         logger.exception("Loggging spinned Instance fatal error: "+ str(err) + "\n")
         sys.exit(1)
@@ -132,7 +126,7 @@ def instanceStatus(request):
         response = serviceDetail(request)
         assumeRoleCreds = ingestAPICall(response)
         instanceData = instanceController(response["region"], response["service"], credentials=assumeRoleCreds)
-        # pprint.pprint(instanceData)
+        # pprint.pprint(instanceController)
         
     except Exception as err:
         logger.exception("Error while Executing the InstanceStatus method: "+ str(err) + "\n")

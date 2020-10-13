@@ -63,7 +63,6 @@ class abstractionLayer:
     
     except Client.exceptions.InvalidPaginationToken as err:
       logger.warn("Logging Exception: "+ str(err)+ "\n")
-      return str(err)
       sys.exit(1)
       
       
@@ -283,7 +282,6 @@ class abstractionLayer:
       
     except Client.exceptions.InvalidAuthorizationMessageException as authMessageErr:
       logger.warn("Logging Exception: "+ str(authMessageErr)+ "\n")
-      return str(authMessageErr)
       sys.exit(1)
 
 
