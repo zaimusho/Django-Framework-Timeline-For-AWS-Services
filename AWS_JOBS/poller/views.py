@@ -1,12 +1,19 @@
 
 import logging
-import sys
+import sys, os, inspect
+# for mocking the request and user logging isntances
+# extracting the base dir of the activated environ with os.environ
+currentDir = os.path.dirname(os.path.abspath(inspect.getfile(inspect.currentframe())))
+parentDir = os.path.dirname(currentDir)
+# adding sub-directory to the python-path for relative imports
+# so that it imports modules as normal scripts
+sys.path.insert(0, parentDir)
 import pprint, json
 from django.shortcuts import render, redirect
 from django.http import HttpResponse
 from django.contrib.auth.decorators import login_required
-from .models import arnDetails
-from .abstraction import abstractionLayer as layerClass
+from poller.models import arnDetails
+from poller.abstraction import abstractionLayer as layerClass
 
 # logging proc structure for the valid executable script and throwable exception
 
@@ -15,7 +22,7 @@ loggingFormat = "[%(filename)s: %(lineno)s- %(funcName)20s() ]  %(message)s"
 logging.basicConfig(format=loggingFormat)
 logger.setLevel(logging.DEBUG)
 
-# dummy data for isntance status check functionality
+# dummy data for instance status check functionality
 data = [
     {
         "instanceId": "12",
@@ -88,7 +95,6 @@ def ingestAPICall(response):
             
         except Exception as err:
             logger.exception("Loggging STS Error: "+ str(err) + "\n")
-            raise
             sys.exit(1)
 
         else:
@@ -112,7 +118,6 @@ def instanceController(region, externCall, credentials):
         exit()
     except Exception as err:
         logger.exception("Loggging spinned Instance fatal error: "+ str(err) + "\n")
-        raise
         sys.exit(1)
         
     else:
