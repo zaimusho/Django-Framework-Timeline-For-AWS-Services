@@ -66,14 +66,13 @@ class abstractionLayer:
       
   def awsSTSRole(self, apiCall, roleARN):
     
-    # experimenting the aws STS roles configurations
-    Session = boto3.Session(profile_name="betaDev", region_name=self.REGION)
-    # Session = boto3.Session(region_name=self.REGION)
-    Client = Session.client(apiCall)
-    
-    logger.debug(Client)
-    
     try:
+      # experimenting the aws STS roles configurations
+      Session = boto3.Session(profile_name="betaDev", region_name=self.REGION)
+      # Session = boto3.Session(region_name=self.REGION)
+      Client = Session.client(apiCall)
+      
+      logger.debug(Client)
       assumeRole = Client.assume_role(
         RoleArn= roleARN,
         RoleSessionName= 'aAssumeRoleSession',
@@ -87,7 +86,7 @@ class abstractionLayer:
       
       logger.info(assumeRole)
       
-    except  Client.exceptions.MalformedPolicyDocumentException as endPointErr:
+    except Exception as endPointErr:
       logger.exception("Logging Exception: "+ str(endPointErr)+ "\n")
       # raise
       sys.exit(1)
@@ -109,7 +108,7 @@ class abstractionLayer:
       
       logger.info("Temporary Credentials Retrieved")
       
-    except NoCredentialsError as credsErr:
+    except Exception as credsErr:
       logger.exception("Logging exception: "+ str(credsErr)+ "\n")
       # raise
       sys.exit(1)
@@ -139,22 +138,21 @@ class abstractionLayer:
           # scanning the AWS regions for entire spinned instances
           scannedRegion = self.scanRegion(service=externService)
           logger.info("Listing the AWS instances Region Worldwide")
-          
+          print("here")
           for eachRegion in scannedRegion['Regions']:
             # allRegions.append(eachRegion['RegionName'])
-            
             session = boto3.Session(aws_access_key_id = securityID, 
                                     aws_secret_access_key = securitySecret,
                                     aws_session_token = securityToken, 
                                     region_name=eachRegion["RegionName"])
             
-            
             logger.info("Iterated session Object " + str(session) + "\n")
             fetchResource = session.resource(service_name=externService)
+            print("fetch resources ", fetchResource.instances.all())
+            print("fetch resources type ", type(fetchResource.instances.all()))
             
             for eachInstance in fetchResource.instances.all():
               # inline response catch for the instance history
-              
               print(eachInstance.instance_id, eachInstance.instance_type, eachInstance.platform, 
                     eachInstance.hypervisor, eachInstance.architecture, eachInstance.root_device_name, eachInstance.iam_instance_profile,
                     eachInstance.launch_time, eachInstance.placement, eachInstance.state, eachInstance.state_transition_reason, 
