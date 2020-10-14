@@ -39,7 +39,7 @@ class abstractionLayer:
       return serviceRegions
    
     
-  def awshealth(self, apiCall, pollingRegion, services, *statusCodes):
+  def awshealth(self, apiCall, pollingRegion, services, statusCodes):
     # describe affected entities
     # management by access
     
