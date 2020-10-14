@@ -26,9 +26,9 @@ class abstractionLayer:
       # scan AWS Regions available for services
       sessionObj = boto3.Session(profile_name="betaDev", region_name=self.REGION)
       logger.info("Session Object: " + str(sessionObj))
-      client = sessionObj.client(service_name=service)
-      logger.info(client)
-      serviceRegions = client.describe_regions()
+      Client = sessionObj.client(service_name=service)
+      logger.info(Client)
+      serviceRegions = Client.describe_regions()
       
     except Exception as error:
       logger.exception(str(error))
@@ -42,15 +42,13 @@ class abstractionLayer:
   def awshealth(self, apiCall, pollingRegion, services, statusCodes):
     # describe affected entities
     # management by access
-    
-    Session = boto3.Session(profile_name="betaDev", region_name=pollingRegion)
-    Client = Session.client(apiCall)
-    logger.info(Client)
-    
     try:
+      Session = boto3.Session(profile_name="betaDev", region_name=pollingRegion)
+      client = Session.client(apiCall)
+      logger.info(client)
       
       # print(self.REGION)
-      healthResponse = Client.describe_events(
+      healthResponse = client.describe_events(
                 filter = {
                   'services': services,
                   'eventStatusCodes': statusCodes
@@ -61,8 +59,8 @@ class abstractionLayer:
       
       return healthResponse
     
-    except Client.exceptions.InvalidPaginationToken as err:
-      logger.warn("Logging Exception: "+ str(err)+ "\n")
+    except Exception as err:
+      logger.warning("Logging Exception: "+ str(err)+ "\n")
       sys.exit(1)
       
       
@@ -262,29 +260,35 @@ class abstractionLayer:
       # raise
       sys.exit(1)  
   
+  '''
   
-  def decodeAuthMessage(self):
+  # not used for the while as this to be used in consideration with other 
+  # defined scope
+
+  # def decodeAuthMessage(self):
     
-    # encoding method call for authorisation message
-    session = boto3.Session(profile_name="betaDev", region_name=self.REGION)
-    Client = session.client('sts')
-    logger.debug(Client)
+  #   # encoding method call for authorisation message
+  #   session = boto3.Session(profile_name="betaDev", region_name=self.REGION)
+  #   Client = session.client('sts')
+  #   logger.debug(Client)
     
-    try:
-      stsSession = Client
-      authResponse = stsSession.decode_authorisation_message(
-        EncodedMessage= 'initial encoding authorisation message response', # message of interest that needs to be encoded
-      )
+  #   try:
+  #     stsSession = Client
+  #     authResponse = stsSession.decode_authorisation_message(
+  #       EncodedMessage= 'initial encoding authorisation message response', # message of interest that needs to be encoded
+  #     )
       
-      logger.info(str(authResponse))
+  #     logger.info(str(authResponse))
       
-      return authResponse
+  #     return authResponse
       
-    except Client.exceptions.InvalidAuthorizationMessageException as authMessageErr:
-      logger.warn("Logging Exception: "+ str(authMessageErr)+ "\n")
-      sys.exit(1)
+  #   except Client.exceptions.InvalidAuthorizationMessageException as authMessageErr:
+  #     logger.warn("Logging Exception: "+ str(authMessageErr)+ "\n")
+  #     sys.exit(1)
 
 
 
-# handling of raise exceptions needs to be practiced for scripting
-# testcases for exception raising.
+  # handling of raise exceptions needs to be practiced for scripting
+  # testcases for exception raising.
+
+  '''
