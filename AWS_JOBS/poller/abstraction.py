@@ -1,6 +1,7 @@
 
 import os, sys
 import boto3
+import boto3.session
 import logging
 import pprint, json
 from bson import json_util
@@ -24,7 +25,7 @@ class abstractionLayer:
   def scanRegion(self, service):
     try:
       # scan AWS Regions available for services
-      sessionObj = boto3.Session(profile_name="betaDev", region_name=self.REGION)
+      sessionObj = boto3.session.Session(profile_name="betaDev", region_name=self.REGION)
       logger.info("Session Object: " + str(sessionObj))
       Client = sessionObj.client(service_name=service)
       logger.info(Client)
@@ -43,7 +44,7 @@ class abstractionLayer:
     # describe affected entities
     # management by access
     try:
-      Session = boto3.Session(profile_name="betaDev", region_name=pollingRegion)
+      Session = boto3.session.Session(profile_name="betaDev", region_name=pollingRegion)
       client = Session.client(apiCall)
       logger.info(client)
       
@@ -68,7 +69,7 @@ class abstractionLayer:
     
     try:
       # experimenting the aws STS roles configurations
-      Session = boto3.Session(profile_name="betaDev", region_name=self.REGION)
+      Session = boto3.session.Session(profile_name="betaDev", region_name=self.REGION)
       # Session = boto3.Session(region_name=self.REGION)
       Client = Session.client(apiCall)
       
@@ -138,18 +139,18 @@ class abstractionLayer:
           # scanning the AWS regions for entire spinned instances
           scannedRegion = self.scanRegion(service=externService)
           logger.info("Listing the AWS instances Region Worldwide")
-          print("here")
+          
           for eachRegion in scannedRegion['Regions']:
             # allRegions.append(eachRegion['RegionName'])
-            session = boto3.Session(aws_access_key_id = securityID, 
+            session = boto3.session.Session(aws_access_key_id = securityID, 
                                     aws_secret_access_key = securitySecret,
                                     aws_session_token = securityToken, 
                                     region_name=eachRegion["RegionName"])
             
             logger.info("Iterated session Object " + str(session) + "\n")
             fetchResource = session.resource(service_name=externService)
-            print("fetch resources ", fetchResource.instances.all())
-            print("fetch resources type ", type(fetchResource.instances.all()))
+            # print("fetch resources ", fetchResource.instances.all())
+            # print("fetch resources type ", type(fetchResource.instances.all()))
             
             for eachInstance in fetchResource.instances.all():
               # inline response catch for the instance history
@@ -224,7 +225,7 @@ class abstractionLayer:
         securityToken = tmpCredentials[2]
         
         # print(securityID, securitySecret, securityToken)
-        session = boto3.Session(region_name=self.REGION)
+        session = boto3.session.Session(region_name=self.REGION)
         logger.info(session)
         
         # Client session for flag condition block 
@@ -266,7 +267,7 @@ class abstractionLayer:
   # def decodeAuthMessage(self):
     
   #   # encoding method call for authorisation message
-  #   session = boto3.Session(profile_name="betaDev", region_name=self.REGION)
+  #   session = boto3.session.Session(profile_name="betaDev", region_name=self.REGION)
   #   Client = session.client('sts')
   #   logger.debug(Client)
     
