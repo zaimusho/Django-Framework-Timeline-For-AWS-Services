@@ -43,8 +43,8 @@ class TestViews(TestCase):
         self.status_url = reverse("status-logger")
         self.abstraction_mock = sys.modules["abstraction"].abstractionLayer
         self.boto3_mock = sys.modules["boto3"]
-        self.mock_region = "mock_region"
-        self.mock_extern_call = "mock_extern_api"
+        self.mock_region = "us-east-1"
+        self.mock_extern_call = "ec2"
         self.mock_credentials = [
                         "mock_security_id",
                         "mock_security_secret",
@@ -164,7 +164,7 @@ class TestViews(TestCase):
                     "token": "mock_token",
                 }
 
-        self.abstraction_mock = Mock(return_value = "mock_region")
+        self.abstraction_mock = Mock(return_value = "us-east-2")
         statusCheck_mock.return_value = {
                                         "service": "mock_1",
                                         "status": "stop",
@@ -178,14 +178,14 @@ class TestViews(TestCase):
 
 
     # need to mock the respective working func
-    # def test_instance_controller_exception_handling(self):
+    def test_instance_controller_exception_handling(self):
         
-    #     with self.assertRaises(SystemExit) as sys_exit:
-    #         self.abstraction_mock = Mock(return_value = self.mock_region)
-    #         # print(self.abstraction_mock)       
-    #         instanceController(self.mock_region, "mock_ec2", self.mock_credentials)
-            
-    #     self.assertEqual(sys_exit.exception.code, 1)
+        with self.assertRaises(SystemExit) as sys_exit:
+            self.abstraction_mock = Mock(return_value = self.mock_region)
+            # print(self.abstraction_mock)  
+            instanceController(self.mock_region, "ec2", self.mock_credentials)
+
+        self.assertEqual(sys_exit.exception.code, 1)
 
     
     @patch("poller.views.serviceDetail")
