@@ -22,7 +22,6 @@ import django
 django.setup()
 
 import boto3
-import bson
 # botocore has a client Stubber for mocking the error
 from botocore.stub import Stubber
 import sys, unittest
@@ -31,9 +30,8 @@ from django.contrib.auth.models import User
 from django.test import TestCase, RequestFactory, Client
 from django.urls import reverse
 from mixer.backend.django import mixer
-from poller.abstraction import abstractionLayer
+from poller.abstraction import AbstractionLayer
 
-sys.modules["bson"] = Mock()
 sys.modules["boto3"] = Mock()
 
 
@@ -42,7 +40,6 @@ class TestAbstraction(TestCase):
     def setUp(self):
         self.client = Client()
         self.boto3_mock = sys.modules["boto3"]
-        self.bson_mock = sys.modules["bson"].json_util
         self.ec2_mock = "ec2"
         self.health_mock = "health"
         self.region_mock = "us-east-2"
@@ -58,8 +55,8 @@ class TestAbstraction(TestCase):
         self.boto3_mock = Mock()
         session_mock.return_value = "boto3 client mocked "
 
-        instance = abstractionLayer(region)
-        instance.scanRegion(self.ec2_mock)
+        instance = AbstractionLayer(region)
+        instance.scan_region(self.ec2_mock)
 
         # client_mock.assert_call_once('ec2')
 
@@ -72,8 +69,8 @@ class TestAbstraction(TestCase):
             self.boto3_mock = Mock()
             session_mock.return_value = "boto3 client mocked "
 
-            instance = abstractionLayer(region)
-            instance.scanRegion("us-east-2")
+            instance = AbstractionLayer(region)
+            instance.scan_region("us-east-2")
 
         self.assertEqual(sys_exit.exception.code, 1)
 
@@ -105,8 +102,8 @@ class TestAbstraction(TestCase):
 
         # handling the try code block
         describe_events_mock.return_value = mock_response
-        instance = abstractionLayer(region)
-        instance.awshealth(api, region, services, codes)
+        instance = AbstractionLayer(region)
+        instance.aws_health(api, region, services, codes)
 
 
     @patch("boto3.session.Session")
@@ -122,8 +119,8 @@ class TestAbstraction(TestCase):
             session_mock.return_value = "boto3 client mocked "
 
             # handling the try code block
-            instance = abstractionLayer(region)
-            instance.awshealth("health_mock", region, services, codes)
+            instance = AbstractionLayer(region)
+            instance.aws_health("health_mock", region, services, codes)
 
         self.assertEqual(sys_exit.exception.code, 1)
 
@@ -154,8 +151,8 @@ class TestAbstraction(TestCase):
         session_mock.return_value = "session for boto3 client mocked "
 
         assume_role_mock.return_value = mock_response
-        instance = abstractionLayer(region)
-        instance.awsSTSRole(api, roleArn)
+        instance = AbstractionLayer(region)
+        instance.aws_sts_role(api, roleArn)
 
     @patch("boto3.session.Session")
     def test_aws_sts_role_exception_catch(self, session_mock):
@@ -164,8 +161,8 @@ class TestAbstraction(TestCase):
             api = "sts"
             roleArn = ""
 
-            instance = abstractionLayer(region)
-            instance.awsSTSRole(api, roleArn)
+            instance = AbstractionLayer(region)
+            instance.aws_sts_role(api, roleArn)
 
         self.assertEqual(sys_exit.exception.code, 1)
 
@@ -182,8 +179,8 @@ class TestAbstraction(TestCase):
             }
         }
 
-        instance = abstractionLayer(region)
-        instance.roleDataExtraction(mock_credentials)
+        instance = AbstractionLayer(region)
+        instance.role_data_extraction(mock_credentials)
 
 
     def test_role_data_extraction_exception_handling(self):
@@ -195,8 +192,8 @@ class TestAbstraction(TestCase):
                 }
             }
 
-            instance = abstractionLayer(region)
-            instance.roleDataExtraction(mock_credentials)
+            instance = AbstractionLayer(region)
+            instance.role_data_extraction(mock_credentials)
 
         self.assertEqual(sys_exit.exception.code, 1)
 
@@ -248,8 +245,8 @@ class TestAbstraction(TestCase):
         session_mock.return_value = "session for boto3 client is mocked "
         describe_instances_mock.return_value = mock_response
 
-        instance = abstractionLayer(region)
-        instance.describeInstance(mock_extern_service, mock_credentials)
+        instance = AbstractionLayer(region)
+        instance.describe_instance(mock_extern_service, mock_credentials)
 
     
     def test_describe_instance_outer_exception_handling(self, ):
@@ -263,8 +260,8 @@ class TestAbstraction(TestCase):
             
                 ]
 
-            instance = abstractionLayer(region)
-            instance.describeInstance(mock_extern_service, mock_tmp_credentials)
+            instance = AbstractionLayer(region)
+            instance.describe_instance(mock_extern_service, mock_tmp_credentials)
         
         self.assertEqual(sys_exit.exception.code, 1)
 
@@ -283,8 +280,8 @@ class TestAbstraction(TestCase):
             
                 ]
 
-            instance = abstractionLayer(region)
-            instance.describeInstance(mock_extern_service, mock_tmp_credentials)
+            instance = AbstractionLayer(region)
+            instance.describe_instance(mock_extern_service, mock_tmp_credentials)
         
         self.assertEqual(sys_exit.exception.code, 1)
 
@@ -304,8 +301,8 @@ class TestAbstraction(TestCase):
             
                 ]
 
-            instance = abstractionLayer(region)
-            instance.clientSpinStatusCheck(mock_extern_service, mock_tmp_credentials)
+            instance = AbstractionLayer(region)
+            instance.client_spin_status_check(mock_extern_service, mock_tmp_credentials)
         
         self.assertEqual(sys_exit.exception.code, 1)
 
@@ -324,8 +321,8 @@ class TestAbstraction(TestCase):
             
                 ]
 
-            instance = abstractionLayer(region)
-            instance.clientSpinStatusCheck(mock_extern_service, mock_tmp_credentials)
+            instance = AbstractionLayer(region)
+            instance.client_spin_status_check(mock_extern_service, mock_tmp_credentials)
         
         self.assertEqual(sys_exit.exception.code, 1)
 

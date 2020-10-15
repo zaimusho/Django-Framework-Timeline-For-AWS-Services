@@ -10,26 +10,28 @@ from botocore.exceptions import NoCredentialsError, InvalidSTSRegionalEndpointsC
 # logging proc structure for the valid executable script and throwable exception
 
 logger = logging.getLogger(__name__)
-loggingFormat = "[%(filename)s: %(lineno)s- %(funcName)20s() ]  %(message)s"
-logging.basicConfig(format=loggingFormat)
+logging_format = "[%(filename)s: %(lineno)s- %(funcName)20s() ]  %(message)s"
+logging.basicConfig(format=logging_format)
 logger.setLevel(logging.DEBUG)
 
 
-class abstractionLayer:
+class AbstractionLayer:
   
-  def __init__(self, REGION):
-    super().__init__()
-    self.REGION = REGION
+  def __init__(self, region):
+    super(AbstractionLayer, self).__init__()
+    self.region = region
    
-    
-  def scanRegion(self, service):
+  # Instead of taking the aws credentials explicity (profile_name="betaDev")
+  # this can be defined implicity as (aws_access_key_id, aws_secret_access_key) 
+  
+  def scan_region(self, service):
     try:
       # scan AWS Regions available for services
-      sessionObj = boto3.session.Session(profile_name="betaDev", region_name=self.REGION)
-      logger.info("Session Object: " + str(sessionObj))
-      Client = sessionObj.client(service_name=service)
-      logger.info(Client)
-      serviceRegions = Client.describe_regions()
+      session_obj = boto3.session.Session(profile_name="betaDev", region_name=self.region)
+      logger.info("Session Object: " + str(session_obj))
+      client = session_obj.client(service_name=service)
+      logger.info(client)
+      service_regions = client.describe_regions()
       
     except Exception as error:
       logger.exception(str(error))
@@ -37,46 +39,46 @@ class abstractionLayer:
       sys.exit(1)
     
     else:
-      return serviceRegions
+      return service_regions
    
     
-  def awshealth(self, apiCall, pollingRegion, services, statusCodes):
+  def aws_health(self, api_call, polling_region, services, status_codes):
     # describe affected entities
     # management by access
     try:
-      Session = boto3.session.Session(profile_name="betaDev", region_name=pollingRegion)
-      client = Session.client(apiCall)
+      session = boto3.session.Session(profile_name="betaDev", region_name=polling_region)
+      client = session.client(api_call)
       logger.info(client)
       
       # print(self.REGION)
-      healthResponse = client.describe_events(
+      health_response = client.describe_events(
                 filter = {
                   'services': services,
-                  'eventStatusCodes': statusCodes
+                  'eventStatusCodes': status_codes
                 }
               )
       
-      logger.info(str(healthResponse))
+      logger.info(str(health_response))
       
-      return healthResponse
+      return health_response
     
     except Exception as err:
       logger.warning("Logging Exception: "+ str(err)+ "\n")
       sys.exit(1)
       
       
-  def awsSTSRole(self, apiCall, roleARN):
+  def aws_sts_role(self, api_call, role_arn):
     
     try:
       # experimenting the aws STS roles configurations
-      Session = boto3.session.Session(profile_name="betaDev", region_name=self.REGION)
+      session = boto3.session.Session(profile_name="betaDev", region_name=self.region)
       # Session = boto3.Session(region_name=self.REGION)
-      Client = Session.client(apiCall)
+      client = session.client(api_call)
       
-      logger.debug(Client)
-      assumeRole = Client.assume_role(
-        RoleArn= roleARN,
-        RoleSessionName= 'aAssumeRoleSession',
+      logger.debug(client)
+      assume_role = client.assume_role(
+        RoleArn= role_arn,
+        RoleSessionName= 'AssumeRoleSession',
         PolicyArns=[
                     {
                       "arn": "arn:aws:iam::179790312905:policy/AWS_AssumeRolePolicy"
@@ -85,118 +87,117 @@ class abstractionLayer:
         ExternalId= 'assumeRoleAWS'
       )
       
-      logger.info(assumeRole)
+      logger.info(assume_role)
       
-    except Exception as endPointErr:
-      logger.exception("Logging Exception: "+ str(endPointErr)+ "\n")
+    except Exception as end_point_err:
+      logger.exception("Logging Exception: "+ str(end_point_err)+ "\n")
       # raise
       sys.exit(1)
       
     else:
-      return assumeRole
+      return assume_role
   
   
-  def roleDataExtraction(self, assumeRoleCredentials):
+  def role_data_extraction(self, assume_role_credentials):
     # extracting credentials from the Roles created in particular session
-    tmpCredentials = list()
+    temp_credentials = list()
     
     try: 
       # unpacking the id, secret and security token
     
-      tmpCredentials.append(assumeRoleCredentials['Credentials']['AccessKeyId'])
-      tmpCredentials.append(assumeRoleCredentials['Credentials']['SecretAccessKey']) 
-      tmpCredentials.append(assumeRoleCredentials['Credentials']['SessionToken'])
+      temp_credentials.append(assume_role_credentials['Credentials']['AccessKeyId'])
+      temp_credentials.append(assume_role_credentials['Credentials']['SecretAccessKey']) 
+      temp_credentials.append(assume_role_credentials['Credentials']['SessionToken'])
       
       logger.info("Temporary Credentials Retrieved")
       
-    except Exception as credsErr:
-      logger.exception("Logging exception: "+ str(credsErr)+ "\n")
+    except Exception as creds_err:
+      logger.exception("Logging exception: "+ str(creds_err)+ "\n")
       # raise
       sys.exit(1)
       
     else:
-      return tmpCredentials
+      return temp_credentials
       
   
   # Use the assumed clients temporary security credentials to spin new Boto3 client instance
   
-  def clientSpinStatusCheck(self, externService, tmpCredentials):
+  def client_spin_status_check(self, extern_service, temp_credentials):
     
     # Executing the client using STS temporary credentails
     instance = dict()
-    instanceStack = list()
+    instance_stack = list()
     # flag = False
-
     try:
-      if tmpCredentials:
-        securityID = tmpCredentials[0]
-        securitySecret = tmpCredentials[1]
-        securityToken = tmpCredentials[2]
+      if temp_credentials:
+        security_id = temp_credentials[0]
+        security_secret = temp_credentials[1]
+        security_token = temp_credentials[2]
         
         # print(securityID, securitySecret, securityToken)
         
         try:
           # scanning the AWS regions for entire spinned instances
-          scannedRegion = self.scanRegion(service=externService)
+          scanned_region = self.scan_region(service=extern_service)
           logger.info("Listing the AWS instances Region Worldwide")
           
-          for eachRegion in scannedRegion['Regions']:
+          for each_region in scanned_region['Regions']:
             # allRegions.append(eachRegion['RegionName'])
-            session = boto3.session.Session(aws_access_key_id = securityID, 
-                                    aws_secret_access_key = securitySecret,
-                                    aws_session_token = securityToken, 
-                                    region_name=eachRegion["RegionName"])
+            session = boto3.session.Session(aws_access_key_id = security_id, 
+                                    aws_secret_access_key = security_secret,
+                                    aws_session_token = security_token, 
+                                    region_name=each_region["RegionName"])
             
             logger.info("Iterated session Object " + str(session) + "\n")
-            fetchResource = session.resource(service_name=externService)
-            # print("fetch resources ", fetchResource.instances.all())
-            # print("fetch resources type ", type(fetchResource.instances.all()))
+            fetch_resource = session.resource(service_name=extern_service)
+            print("fetch resources type ", fetch_resource)
             
-            for eachInstance in fetchResource.instances.all():
+            for each_instance in fetch_resource.instances.all():
+              print("each instance", each_instance)
               # inline response catch for the instance history
-              print(eachInstance.instance_id, eachInstance.instance_type, eachInstance.platform, 
-                    eachInstance.hypervisor, eachInstance.architecture, eachInstance.root_device_name, eachInstance.iam_instance_profile,
-                    eachInstance.launch_time, eachInstance.placement, eachInstance.state, eachInstance.state_transition_reason, 
-                    eachInstance.ami_launch_index, eachInstance.client_token, eachInstance.image, eachInstance.network_interfaces, 
-                    eachInstance.metadata_options, eachInstance.state_reason, eachInstance.network_interfaces_attribute, 
+              print(each_instance.instance_id, each_instance.instance_type, each_instance.platform, 
+                    each_instance.hypervisor, each_instance.architecture, each_instance.root_device_name, each_instance.iam_instance_profile,
+                    each_instance.launch_time, each_instance.placement, each_instance.state, each_instance.state_transition_reason, 
+                    each_instance.ami_launch_index, each_instance.client_token, each_instance.image, each_instance.network_interfaces, 
+                    each_instance.metadata_options, each_instance.state_reason, each_instance.network_interfaces_attribute, 
                     "\n")            
            
               instance = {
-                "instanceId": eachInstance.instance_id,
-                "type": eachInstance.instance_type,
-                "platform": eachInstance.platform,
-                "kernelId": eachInstance.kernel_id,
-                "hypervisor": eachInstance.hypervisor,
-                "architecture": eachInstance.architecture,
-                "rootDevice": eachInstance.root_device_name,
-                "lauchtime": eachInstance.launch_time.strftime("%Y-%m-%d %I:%M %p"),
-                "state": eachInstance.state,
-                "tranReason": eachInstance.state_transition_reason,
-                "ami_index": eachInstance.ami_launch_index,
-                "clientToken": eachInstance.client_token,
-                "hibernation": eachInstance.hibernation_options["Configured"],
-                "ebs": eachInstance.ebs_optimized,
-                "image": eachInstance.image,
-                "interface": eachInstance.network_interfaces[0],
-                "stateReason": eachInstance.state_reason["Message"],
-                "groupId": (eachInstance.network_interfaces_attribute[0]["Groups"])[0]["GroupId"],
-                "MacAddress": eachInstance.network_interfaces_attribute[0]["MacAddress"],
-                "ownerId": eachInstance.network_interfaces_attribute[0]["OwnerId"],
-                "privateIpAddr": eachInstance.network_interfaces_attribute[0]["PrivateIpAddress"],
-                "networkStatus": eachInstance.network_interfaces_attribute[0]["Status"],
-                "httpEndpoint": eachInstance.metadata_options["HttpEndpoint"],
-                "placementZone": eachInstance.placement["AvailabilityZone"],
-                "tenancy": eachInstance.placement["Tenancy"],
-                "Arn": eachInstance.iam_instance_profile["Arn"],
-                "ArnId": eachInstance.iam_instance_profile["Id"],
-                "status": eachInstance.state["Name"],
-                "statusCode": eachInstance.state["Code"],
+                "instanceId": each_instance.instance_id,
+                "type": each_instance.instance_type,
+                "platform": each_instance.platform,
+                "kernelId": each_instance.kernel_id,
+                "hypervisor": each_instance.hypervisor,
+                "architecture": each_instance.architecture,
+                "rootDevice": each_instance.root_device_name,
+                "lauchtime": each_instance.launch_time.strftime("%Y-%m-%d %I:%M %p"),
+                "state": each_instance.state,
+                "tranReason": each_instance.state_transition_reason,
+                "ami_index": each_instance.ami_launch_index,
+                "clientToken": each_instance.client_token,
+                "hibernation": each_instance.hibernation_options["Configured"],
+                "ebs": each_instance.ebs_optimized,
+                "image": each_instance.image,
+                "interface": each_instance.network_interfaces[0],
+                "stateReason": each_instance.state_reason["Message"],
+                "groupId": (each_instance.network_interfaces_attribute[0]["Groups"])[0]["GroupId"],
+                "MacAddress": each_instance.network_interfaces_attribute[0]["MacAddress"],
+                "ownerId": each_instance.network_interfaces_attribute[0]["OwnerId"],
+                "privateIpAddr": each_instance.network_interfaces_attribute[0]["PrivateIpAddress"],
+                "networkStatus": each_instance.network_interfaces_attribute[0]["Status"],
+                "httpEndpoint": each_instance.metadata_options["HttpEndpoint"],
+                "placementZone": each_instance.placement["AvailabilityZone"],
+                "tenancy": each_instance.placement["Tenancy"],
+                "Arn": each_instance.iam_instance_profile["Arn"],
+                "ArnId": each_instance.iam_instance_profile["Id"],
+                "status": each_instance.state["Name"],
+                "statusCode": each_instance.state["Code"],
                 
               }
               
-              instanceStack.append(instance)
+              instance_stack.append(instance)
               
-              logger.info("Information logged for AWS region: {}" .format(eachRegion["RegionName"]) + "\n")
+              logger.info("Information logged for AWS region: {}" .format(each_region["RegionName"]) + "\n")
               
           logger.info("Variable components of AWS instance Acquired !")
            
@@ -205,45 +206,45 @@ class abstractionLayer:
           # raise
           sys.exit(1)
         else:
-          return instanceStack
+          return instance_stack
             
-    except Exception as outerErr:
-      logger.exception("Logging exception error for Spin New Client method: "+ str(outerErr)+ "\n")
+    except Exception as outer_err:
+      logger.exception("Logging exception error for Spin New Client method: "+ str(outer_err)+ "\n")
       # raise
       sys.exit(1)    
     
      
-  def describeInstance(self, externService, tmpCredentials):
+  def describe_instance(self, extern_service, temp_credentials):
     # Executing the client using STS temporary credentails
     response = dict()
     flag = True
 
     try:
-      if tmpCredentials:
-        securityID = tmpCredentials[0]
-        securitySecret = tmpCredentials[1]
-        securityToken = tmpCredentials[2]
+      if temp_credentials:
+        security_id = temp_credentials[0]
+        security_secret = temp_credentials[1]
+        security_token = temp_credentials[2]
         
         # print(securityID, securitySecret, securityToken)
-        session = boto3.session.Session(region_name=self.REGION)
+        session = boto3.session.Session(region_name=self.region)
         logger.info(session)
         
         # Client session for flag condition block 
-        assumedClient = session.client(service_name=externService, 
-                                      aws_access_key_id = securityID, 
-                                      aws_secret_access_key = securitySecret,
-                                      aws_session_token = securityToken)
+        assumed_client = session.client(service_name=extern_service, 
+                                      aws_access_key_id = security_id, 
+                                      aws_secret_access_key = security_secret,
+                                      aws_session_token = security_token)
         
         # assumedClient = session.client(service_name=externService)
         
-        logger.info(assumedClient)
+        logger.info(assumed_client)
         
         if flag:
           try:
-            if externService == "ec2":
+            if extern_service == "ec2":
               # explicity defining the system, internal state of running instances
               # response = assumedClient.describe_instance_status(IncludeAllInstances=True, DryRun=False)
-              response = assumedClient.describe_instances(DryRun=False)
+              response = assumed_client.describe_instances(DryRun=False)
               logging.debug(response)
             
           except Exception as err:
@@ -254,8 +255,8 @@ class abstractionLayer:
           else:
             return response
       
-    except Exception as outerErr:
-      logger.exception("Logging exception error for Spin New Client method: "+ str(outerErr)+ "\n")
+    except Exception as outer_err:
+      logger.exception("Logging exception error for Spin New Client method: "+ str(outer_err)+ "\n")
       # raise
       sys.exit(1)  
   
@@ -264,25 +265,25 @@ class abstractionLayer:
   # not used for the while as this to be used in consideration with other 
   # defined scope
 
-  # def decodeAuthMessage(self):
+  # def decode_auth_message(self):
     
   #   # encoding method call for authorisation message
-  #   session = boto3.session.Session(profile_name="betaDev", region_name=self.REGION)
-  #   Client = session.client('sts')
-  #   logger.debug(Client)
+  #   session = boto3.session.Session(profile_name="betaDev", region_name=self.region)
+  #   client = session.client('sts')
+  #   logger.debug(client)
     
   #   try:
-  #     stsSession = Client
-  #     authResponse = stsSession.decode_authorisation_message(
+  #     sts_session = client
+  #     auth_response = sts_session.decode_authorisation_message(
   #       EncodedMessage= 'initial encoding authorisation message response', # message of interest that needs to be encoded
   #     )
       
-  #     logger.info(str(authResponse))
+  #     logger.info(str(auth_response))
       
-  #     return authResponse
+  #     return auth_response
       
-  #   except Client.exceptions.InvalidAuthorizationMessageException as authMessageErr:
-  #     logger.warn("Logging Exception: "+ str(authMessageErr)+ "\n")
+  #   except client.exceptions.InvalidAuthorizationMessageException as auth_message_err:
+  #     logger.warn("Logging Exception: "+ str(auth_message_err)+ "\n")
   #     sys.exit(1)
 
 

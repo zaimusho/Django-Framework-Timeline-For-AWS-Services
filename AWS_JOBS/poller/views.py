@@ -13,13 +13,13 @@ from django.shortcuts import render, redirect
 from django.http import HttpResponse
 from django.contrib.auth.decorators import login_required
 from poller.models import arnDetails
-from poller.abstraction import abstractionLayer as layerClass
+from poller.abstraction import AbstractionLayer as LayerClass
 
 # logging proc structure for the valid executable script and throwable exception
 
 logger = logging.getLogger(__name__)
-loggingFormat = "[%(filename)s: %(lineno)s- %(funcName)20s() ]  %(message)s"
-logging.basicConfig(format=loggingFormat)
+logging_format = "[%(filename)s: %(lineno)s- %(funcName)20s() ]  %(message)s"
+logging.basicConfig(format=logging_format)
 logger.setLevel(logging.DEBUG)
 
 # dummy data for instance status check functionality
@@ -40,13 +40,13 @@ data = [
 ]
 
 
-def idealFunc(request):
+def ideal_func(request):
     context = {}
 
     return render(request, "poller/viewer.html", context=context)
 
 
-def serviceDetail(request):
+def service_detail(request):
 
     response = dict()
     
@@ -54,13 +54,13 @@ def serviceDetail(request):
         region = request.POST['REGION']
         service = request.POST['SERVICE']
         api = request.POST['API']
-        roleARN = request.POST['ROLEARN']
+        role_arn = request.POST['ROLEARN']
         
-        if roleARN:
+        if role_arn:
             response["region"] = region
             response["service"] = service
             response["apis"] = api
-            response["roleArn"] = roleARN
+            response["roleArn"] = role_arn
             
             # info = userModel(region=region,service=service,apis=api,arn=roleARN)
             # info.save()
@@ -75,20 +75,20 @@ def serviceDetail(request):
     return response
 
 
-def requestService(request):
+def request_service(request):
     context = {}
     return render(request, "poller/arnDetails.html", context=context)
 
 
 # Controller method for "STS rules" aws service api   
-def ingestAPICall(response):
+def ingest_api_call(response):
     # Logging attributes status for the spinned instances using AssumeRole methodology
     
     if response["roleArn"]:
         try:
-            awsObj = layerClass(REGION=response["region"])
-            assumeRole = awsObj.awsSTSRole(apiCall=response["apis"], roleARN=response["roleArn"])
-            credentials = awsObj.roleDataExtraction(assumeRoleCredentials=assumeRole)
+            aws_obj = LayerClass(region=response["region"])
+            assume_role = aws_obj.aws_sts_role(api_call=response["apis"], role_arn=response["roleArn"])
+            credentials = aws_obj.role_data_extraction(assume_role_credentials=assume_role)
             logger.debug("STS rule controller for AWS ")
             
         except Exception as err:
@@ -103,29 +103,29 @@ def ingestAPICall(response):
         sys.exit(1)
   
         
-def instanceController(region, externCall, credentials):
+def instance_controller(region, extern_call, credentials):
         
     try:
-        awsInstance = layerClass(REGION=region)
+        aws_instance = LayerClass(region=region)
         logger.info("Spinning the AWS Instance with STS Credentials .")
-        objStatus = awsInstance.clientSpinStatusCheck(externService=externCall, tmpCredentials=credentials)
+        obj_status = aws_instance.client_spin_status_check(extern_service=extern_call, temp_credentials=credentials)
         
     except Exception as err:
         logger.exception("Loggging spinned Instance fatal error: "+ str(err) + "\n")
         sys.exit(1)
         
     else:
-        return objStatus
+        return obj_status
 
 @login_required
-def instanceStatus(request):
+def instance_status(request):
     
     # calling the ingestAPI and then instanceController to address the status 
     # for different AWS spinned instances irrespective of their server locations
     try:
-        response = serviceDetail(request)
-        assumeRoleCreds = ingestAPICall(response)
-        instanceData = instanceController(response["region"], response["service"], credentials=assumeRoleCreds)
+        response = service_detail(request)
+        assume_role_creds = ingest_api_call(response)
+        instance_data = instance_controller(response["region"], response["service"], credentials=assume_role_creds)
         # pprint.pprint(instanceController)
         
     except Exception as err:
@@ -134,7 +134,7 @@ def instanceStatus(request):
     
     else:
         context = {
-            "instances": instanceData
+            "instances": instance_data
         }
         
     return render(request, "poller/instanceStatus.html", context=context)

@@ -28,9 +28,9 @@ from unittest.mock import patch, Mock, MagicMock
 from django.contrib.auth.models import User
 from django.test import TestCase, RequestFactory, Client
 from django.urls import reverse
-from poller.views import idealFunc, instanceStatus, serviceDetail, instanceController, ingestAPICall
+from poller.views import ideal_func, instance_status, service_detail, instance_controller, ingest_api_call
 from mixer.backend.django import mixer
-from poller.abstraction import abstractionLayer
+from poller.abstraction import AbstractionLayer
 sys.modules["abstraction"] = Mock()
 sys.modules["boto3"] = Mock()
 
@@ -41,7 +41,7 @@ class TestViews(TestCase):
         self.home_url = reverse("home-poller")
         self.detail_url = reverse("create-details")
         self.status_url = reverse("status-logger")
-        self.abstraction_mock = sys.modules["abstraction"].abstractionLayer
+        self.abstraction_mock = sys.modules["abstraction"].AbstractionLayer
         self.boto3_mock = sys.modules["boto3"]
         self.mock_region = "us-east-1"
         self.mock_extern_call = "ec2"
@@ -62,7 +62,7 @@ class TestViews(TestCase):
 
     def test_ideal_func_request_method_check(self):
         request = RequestFactory().get(self.home_url)
-        response = idealFunc(request)
+        response = ideal_func(request)
 
         assert response.status_code == 200
 
@@ -76,7 +76,7 @@ class TestViews(TestCase):
 
     def test_request_service_method_check(self):
         request = RequestFactory().get(self.detail_url)
-        response = idealFunc(request)
+        response = ideal_func(request)
 
         assert response.status_code == 200
 
@@ -90,7 +90,7 @@ class TestViews(TestCase):
                                             'ROLEARN': 'mockArn:12345'
 
                                         })
-        response = serviceDetail(request)
+        response = service_detail(request)
 
         assert response['region'] == 'mock-region'
         assert response['service'] == 'mock-ec2'
@@ -108,13 +108,13 @@ class TestViews(TestCase):
 
         request = RequestFactory().get(self.detail_url)
         with self.assertRaises(SystemExit) as sys_exit:
-            serviceDetail(request)
+            service_detail(request)
 
         self.assertEqual(sys_exit.exception.code, 1)
 
-    @patch("poller.abstraction.abstractionLayer.awsSTSRole")
-    @patch("poller.abstraction.abstractionLayer.roleDataExtraction")
-    def test_ingest_api_call_try_catch(self, stsRole_mock, dataExtraction_mock):
+    @patch("poller.abstraction.AbstractionLayer.aws_sts_role")
+    @patch("poller.abstraction.AbstractionLayer.role_data_extraction")
+    def test_ingest_api_call_try_catch(self, sts_role_mock, data_extraction_mock):
         mock_arn = {
             "region": self.mock_region,
             "apis": self.mock_extern_call,
@@ -123,16 +123,16 @@ class TestViews(TestCase):
         }
 
         self.abstraction_mock = Mock(return_value = "mock_region")
-        stsRole_mock.return_value = {"apis": "mock_ec2", 
+        sts_role_mock.return_value = {"apis": "mock_ec2", 
                                     "roleArn": self.mock_extern_call, 
                                     
                                     }
-        dataExtraction_mock.return_value = {
+        data_extraction_mock.return_value = {
                                             "key": "mock_key",
                                             "secret": "mock_secret",
                                             "token": "mock_token",
                                         }
-        ingestAPICall(mock_arn)
+        ingest_api_call(mock_arn)
 
 
     def test_ingest_api_call_exception_catch(self):
@@ -142,7 +142,7 @@ class TestViews(TestCase):
         with self.assertRaises(SystemExit) as sys_exit:
             self.abstraction_mock = MagicMock(side_effect = Exception("Logging STS Error: 'apis'"))
             # print(self.abstraction_mock)
-            ingestAPICall(mock_arn)
+            ingest_api_call(mock_arn)
 
         self.assertEqual(sys_exit.exception.code, 1)
 
@@ -150,12 +150,12 @@ class TestViews(TestCase):
     def test_ingest_api_call_exit_method(self):
         mock_arn = {"roleArn": ""}
         with self.assertRaises(SystemExit) as sys_exit:
-            ingestAPICall(mock_arn)
+            ingest_api_call(mock_arn)
 
         self.assertEqual(sys_exit.exception.code, 1)
 
-    @patch("poller.abstraction.abstractionLayer.clientSpinStatusCheck")
-    def test_instance_controller_try_catch(self, statusCheck_mock):
+    @patch("poller.abstraction.AbstractionLayer.client_spin_status_check")
+    def test_instance_controller_try_catch(self, status_check_mock):
         region = self.mock_region
         api = self.mock_extern_call
         credentials = {
@@ -165,7 +165,7 @@ class TestViews(TestCase):
                 }
 
         self.abstraction_mock = Mock(return_value = "us-east-2")
-        statusCheck_mock.return_value = {
+        status_check_mock.return_value = {
                                         "service": "mock_1",
                                         "status": "stop",
                                         "instanceID": "hexadecimal_mock_id",
@@ -174,7 +174,7 @@ class TestViews(TestCase):
 
                                         }
 
-        instanceController(region, api, credentials)
+        instance_controller(region, api, credentials)
 
 
     # need to mock the respective working func
@@ -183,15 +183,15 @@ class TestViews(TestCase):
         with self.assertRaises(SystemExit) as sys_exit:
             self.abstraction_mock = Mock(return_value = self.mock_region)
             # print(self.abstraction_mock)  
-            instanceController(self.mock_region, "ec2", self.mock_credentials)
+            instance_controller(self.mock_region, "ec2", self.mock_credentials)
 
         self.assertEqual(sys_exit.exception.code, 1)
 
     
-    @patch("poller.views.serviceDetail")
-    @patch("poller.views.ingestAPICall")
-    @patch("poller.views.instanceController")
-    def test_instance_status_try_catch(self, mock_service, mock_ingestAPI, mock_instance_controller):
+    @patch("poller.views.service_detail")
+    @patch("poller.views.ingest_api_call")
+    @patch("poller.views.instance_controller")
+    def test_instance_status_try_catch(self, mock_service, mock_ingest_api, mock_instance_controller):
         # mocking Request Method for accessing the AWS
         request = RequestFactory().post(self.status_url,
                                         {
@@ -210,7 +210,7 @@ class TestViews(TestCase):
                                     
                                 }
 
-        instanceStatus(request)
+        instance_status(request)
 
         
     def test_instance_status_exception_handling(self):
@@ -219,7 +219,7 @@ class TestViews(TestCase):
         # using the User modeld for verify authenticated login check
         request.user = mixer.blend(User)
         with self.assertRaises(SystemExit) as sys_exit:
-            instanceStatus(request)
+            instance_status(request)
         
         self.assertEqual(sys_exit.exception.code, 1)
         assert request.status_code == 302
