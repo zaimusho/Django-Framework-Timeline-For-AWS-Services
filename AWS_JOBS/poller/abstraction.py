@@ -5,6 +5,7 @@ import boto3.session
 import logging
 import pprint, json
 from bson import json_util
+# from aws_fips_services import AwsFipsServices
 from botocore.exceptions import NoCredentialsError, InvalidSTSRegionalEndpointsConfigError
 
 # logging proc structure for the valid executable script and throwable exception
@@ -17,6 +18,8 @@ logger.setLevel(logging.DEBUG)
 
 class AbstractionLayer:
   
+  boto3.set_stream_logger(name="botocore")
+
   def __init__(self, region):
     super(AbstractionLayer, self).__init__()
     self.region = region
@@ -81,10 +84,10 @@ class AbstractionLayer:
         RoleSessionName= 'AssumeRoleSession',
         PolicyArns=[
                     {
-                      "arn": "arn:aws:iam::179790312905:policy/AWS_AssumeRolePolicy"
+                      "arn": "arn:aws:iam::938819073054:policy/awsCustomPolicy"
                     },
                   ],
-        ExternalId= 'assumeRoleAWS'
+#        ExternalId= 'ec2filter'
       )
       
       logger.info(assume_role)
